@@ -2,10 +2,10 @@
 import BrowserFrame from './BrowserFrame.astro';
 
 const screenshots = [
-  { label: 'Dashboard', description: 'Health score, attention feed, system status' },
-  { label: 'Container Detail', description: 'Metrics, diagnosis, log patterns' },
-  { label: 'Host Detail', description: 'CPU, memory, load, network charts' },
-  { label: 'Insights', description: 'Predictions, trends, anomaly detection' },
+  { label: 'Container Detail', src: '/screenshots/container_detail_page.png', alt: 'Container detail page showing diagnosis with evidence, related services, and AI analysis' },
+  { label: 'Host Detail', src: '/screenshots/Host_detail_page.png', alt: 'Host detail page showing CPU, memory, load, and network charts over 24 hours' },
+  { label: 'Container Metrics', src: '/screenshots/container_detail_page_continued.png', alt: 'Container detail page showing CPU, memory, network, and disk I/O charts' },
+  { label: 'Insights', src: '/screenshots/insights_page.png', alt: 'Insights page showing availability and health check warnings with feedback buttons' },
 ];
 ---
 
@@ -19,12 +19,7 @@ const screenshots = [
     <div class="mt-10 grid gap-6 sm:grid-cols-2">
       {screenshots.map(shot => (
         <BrowserFrame label={`insightd — ${shot.label}`}>
-          <div class="flex aspect-video items-center justify-center bg-gradient-to-br from-[#0f172a] to-[#1e293b] p-6">
-            <div class="text-center">
-              <p class="text-sm font-medium text-secondary">{shot.label}</p>
-              <p class="mt-1 text-xs text-muted">{shot.description}</p>
-            </div>
-          </div>
+          <img src={shot.src} alt={shot.alt} class="w-full" loading="lazy" />
         </BrowserFrame>
       ))}
     </div>
