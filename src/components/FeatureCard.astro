@@ -8,10 +8,10 @@ interface Props {
 const { title, description, icon } = Astro.props;
 ---
 
-<div class="rounded-xl border border-border bg-surface p-5 transition-colors hover:border-accent/30">
-  <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10">
+<div class="rounded-xl border border-border bg-surface p-5 transition-colors hover:border-accent/30 lg:p-6">
+  <div class="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 lg:mb-4 lg:h-12 lg:w-12">
     <Fragment set:html={icon} />
   </div>
-  <h3 class="text-sm font-semibold text-fg">{title}</h3>
-  <p class="mt-1.5 text-sm text-muted leading-relaxed">{description}</p>
+  <h3 class="text-sm font-semibold text-fg lg:text-base">{title}</h3>
+  <p class="mt-1.5 text-sm text-muted leading-relaxed lg:mt-2 lg:text-[15px]">{description}</p>
 </div>
