@@ -13,15 +13,209 @@ const screenshots = [
   <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
     <div class="text-center">
       <h2 class="text-2xl font-bold text-fg sm:text-3xl">See it in action</h2>
-      <p class="mt-3 text-secondary">A modern, responsive dashboard designed for clarity.</p>
+      <p class="mt-3 text-secondary">A modern, responsive dashboard designed for clarity. Click any screenshot to zoom in.</p>
     </div>
 
     <div class="mt-10 grid gap-6 sm:grid-cols-2">
       {screenshots.map(shot => (
-        <BrowserFrame label={`insightd — ${shot.label}`}>
-          <img src={shot.src} alt={shot.alt} class="w-full" loading="lazy" />
-        </BrowserFrame>
+        <button
+          type="button"
+          class="screenshot-tile group block w-full cursor-zoom-in rounded-xl text-left transition-transform duration-200 hover:scale-[1.015] hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg"
+          data-src={shot.src}
+          data-alt={shot.alt}
+          data-label={`insightd — ${shot.label}`}
+          aria-label={`Zoom in: ${shot.label}`}
+        >
+          <BrowserFrame label={`insightd — ${shot.label}`}>
+            <img src={shot.src} alt={shot.alt} class="block w-full" loading="lazy" />
+          </BrowserFrame>
+        </button>
       ))}
     </div>
   </div>
 </section>
+
+<dialog id="screenshot-lightbox" class="screenshot-lightbox" aria-labelledby="lightbox-label">
+  <div id="lightbox-frame" class="lightbox-frame overflow-hidden rounded-xl border border-border shadow-2xl">
+    <!-- Chrome bar, mirrors BrowserFrame -->
+    <div class="flex items-center gap-2 border-b border-border bg-surface px-4 py-2.5">
+      <div class="flex gap-1.5">
+        <div class="h-3 w-3 rounded-full bg-danger/60"></div>
+        <div class="h-3 w-3 rounded-full bg-warning/60"></div>
+        <div class="h-3 w-3 rounded-full bg-success/60"></div>
+      </div>
+      <span id="lightbox-label" class="ml-2 truncate text-xs text-muted"></span>
+      <button
+        id="lightbox-close"
+        type="button"
+        aria-label="Close"
+        class="ml-auto inline-flex h-7 w-7 items-center justify-center rounded text-muted transition-colors hover:bg-bg-secondary hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div class="bg-bg-secondary">
+      <img id="lightbox-img" src="" alt="" class="block w-full" />
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .screenshot-lightbox {
+    /* Reset the default dialog chrome so we can style the frame freely */
+    margin: auto;
+    padding: 0;
+    border: none;
+    background: transparent;
+    max-width: min(95vw, 1400px);
+    max-height: 95vh;
+    width: min(95vw, 1400px);
+    overflow: visible;
+  }
+
+  .screenshot-lightbox::backdrop {
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0);
+    transition: background 250ms ease-out, backdrop-filter 250ms ease-out;
+  }
+
+  .screenshot-lightbox[open]::backdrop {
+    background: rgba(3, 7, 18, 0.72);
+    backdrop-filter: blur(6px);
+  }
+
+  .lightbox-frame {
+    background: var(--color-bg, #020617);
+    transform-origin: top left;
+    will-change: transform, opacity;
+    max-height: 95vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .lightbox-frame > div:last-child {
+    overflow: auto;
+    flex: 1 1 auto;
+  }
+
+  .lightbox-frame > div:last-child img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lightbox-frame,
+    .screenshot-lightbox::backdrop {
+      transition: none !important;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var dlg = document.getElementById('screenshot-lightbox');
+    if (!dlg || typeof dlg.showModal !== 'function') return; // no <dialog> support
+
+    var frame = document.getElementById('lightbox-frame');
+    var imgEl = document.getElementById('lightbox-img');
+    var labelEl = document.getElementById('lightbox-label');
+    var closeBtn = document.getElementById('lightbox-close');
+    var lastTile = null;
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var OPEN_MS = 320;
+    var CLOSE_MS = 220;
+
+    function openShot(tile) {
+      lastTile = tile;
+      imgEl.src = tile.dataset.src;
+      imgEl.alt = tile.dataset.alt || '';
+      labelEl.textContent = tile.dataset.label || '';
+
+      var startRect = tile.getBoundingClientRect();
+
+      // Show the dialog so we can measure its final rect.
+      dlg.showModal();
+
+      if (reduceMotion) return;
+
+      var endRect = frame.getBoundingClientRect();
+      var dx = startRect.left - endRect.left;
+      var dy = startRect.top - endRect.top;
+      var sx = startRect.width / endRect.width;
+      var sy = startRect.height / endRect.height;
+
+      frame.style.transition = 'none';
+      frame.style.transform =
+        'translate(' + dx + 'px, ' + dy + 'px) scale(' + sx + ', ' + sy + ')';
+      frame.style.opacity = '0.85';
+
+      // Flush styles, then animate to identity.
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          frame.style.transition =
+            'transform ' + OPEN_MS + 'ms cubic-bezier(0.2, 0, 0, 1), opacity ' + OPEN_MS + 'ms ease-out';
+          frame.style.transform = '';
+          frame.style.opacity = '';
+        });
+      });
+    }
+
+    function closeShot() {
+      if (!dlg.open) return;
+
+      if (reduceMotion || !lastTile) {
+        dlg.close();
+        return;
+      }
+
+      var startRect = lastTile.getBoundingClientRect();
+      var endRect = frame.getBoundingClientRect();
+      var dx = startRect.left - endRect.left;
+      var dy = startRect.top - endRect.top;
+      var sx = startRect.width / endRect.width;
+      var sy = startRect.height / endRect.height;
+
+      frame.style.transition =
+        'transform ' + CLOSE_MS + 'ms cubic-bezier(0.4, 0, 1, 1), opacity ' + CLOSE_MS + 'ms ease-in';
+      frame.style.transform =
+        'translate(' + dx + 'px, ' + dy + 'px) scale(' + sx + ', ' + sy + ')';
+      frame.style.opacity = '0';
+
+      var done = false;
+      function finish() {
+        if (done) return;
+        done = true;
+        frame.removeEventListener('transitionend', finish);
+        dlg.close();
+        frame.style.transition = '';
+        frame.style.transform = '';
+        frame.style.opacity = '';
+      }
+      frame.addEventListener('transitionend', finish);
+      // Safety fallback in case transitionend doesn't fire.
+      setTimeout(finish, CLOSE_MS + 80);
+    }
+
+    document.querySelectorAll('.screenshot-tile').forEach(function (tile) {
+      tile.addEventListener('click', function () {
+        openShot(tile);
+      });
+    });
+
+    closeBtn.addEventListener('click', closeShot);
+
+    // Click on backdrop (outside the frame) closes.
+    dlg.addEventListener('click', function (e) {
+      if (e.target === dlg) closeShot();
+    });
+
+    // Intercept the native Esc → cancel so we can animate the close.
+    dlg.addEventListener('cancel', function (e) {
+      e.preventDefault();
+      closeShot();
+    });
+  })();
+</script>
