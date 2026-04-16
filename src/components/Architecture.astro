@@ -1,125 +1,653 @@
 ---
+// Interactive topology. Server-renders at N=3 so the diagram is visible without JS.
+const DEFAULT_HOSTS = 3;
+const MAX_HOSTS = 7;
+const MIN_HOSTS = 1;
+
+// Layout constants (must match the <script> below)
+const VB_W = 900;
+const VB_H = 400;
+const AGENT_CX = 110;
+const AGENT_W = 150;
+const AGENT_H = 52;
+const MQTT_CX = 360;
+const MQTT_LEFT = 290;
+const MQTT_RIGHT = 430;
+const MQTT_Y = 200;
+const HUB_CX = 570;
+const HUB_LEFT = 500;
+const HUB_RIGHT = 640;
+const HUB_Y = 200;
+const OUT_CX = 770;
+const OUT_LEFT = 710;
+const OUT_W = 140;
+const OUT_H = 40;
+const OUT_YS = [122, 200, 278];
+
+function agentYs(n: number) {
+  const top = 56, bot = 344;
+  const span = bot - top;
+  const step = span / n;
+  return Array.from({ length: n }, (_, i) => Math.round(top + step * (i + 0.5)));
+}
+function agentEdge(y: number) {
+  return `M ${AGENT_CX + AGENT_W / 2} ${y} C 235 ${y} 235 ${MQTT_Y} ${MQTT_LEFT} ${MQTT_Y}`;
+}
+function mqttEdge() {
+  return `M ${MQTT_RIGHT} ${MQTT_Y} L ${HUB_LEFT} ${HUB_Y}`;
+}
+function hubEdge(oy: number) {
+  return `M ${HUB_RIGHT} ${HUB_Y} C ${HUB_RIGHT + 45} ${HUB_Y} ${HUB_RIGHT + 45} ${oy} ${OUT_LEFT} ${oy}`;
+}
+
+const initialAgentYs = agentYs(DEFAULT_HOSTS);
+
+const outputs = [
+  { id: 'webui',    label: 'Web UI',   y: OUT_YS[0] },
+  { id: 'email',    label: 'Email',    y: OUT_YS[1] },
+  { id: 'webhooks', label: 'Webhooks', y: OUT_YS[2] },
+];
 ---
 
-<section class="py-16 sm:py-20 lg:py-20">
-  <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-5xl lg:px-8">
+<section id="architecture" class="arch-section py-16 sm:py-20 lg:py-20">
+  <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
     <div class="text-center">
-      <h2 class="text-2xl font-bold text-fg sm:text-3xl">Simple architecture</h2>
-      <p class="mt-3 text-secondary">Agents collect. The hub thinks. You stay informed.</p>
+      <h2 class="text-2xl font-bold text-fg sm:text-3xl">From host to dashboard</h2>
+      <p class="mt-3 text-secondary">Click any piece to see what it does — or add hosts to watch the flow grow.</p>
     </div>
 
-    <div class="mt-10 rounded-xl border border-border bg-surface p-6 sm:p-8">
-      <!-- Desktop: horizontal flow -->
-      <div class="hidden sm:flex sm:items-start sm:justify-center sm:gap-4 lg:gap-6">
-        <!-- Agents -->
-        <div class="flex flex-col items-center gap-3">
-          <div class="w-32 rounded-xl border border-border bg-bg-secondary py-4 text-center lg:w-36 lg:py-5">
-            <svg class="mx-auto h-6 w-6 text-accent lg:h-7 lg:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z" />
-            </svg>
-            <div class="mt-2 text-sm font-semibold text-accent lg:text-base">Agents</div>
-            <div class="mt-0.5 text-xs text-muted lg:text-sm">Per host / node</div>
-          </div>
-          <div class="flex gap-2">
-            <span class="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs text-accent">Docker</span>
-            <span class="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs text-accent">K8s</span>
-          </div>
+    <div class="mt-10 rounded-xl border border-border bg-surface p-4 sm:p-6">
+      <!-- Desktop: interactive SVG topology (sm: and up) -->
+      <div class="arch-desktop hidden sm:block">
+        <div class="mb-4 flex items-center justify-center gap-3 text-sm">
+          <button
+            type="button"
+            class="host-btn"
+            data-action="dec"
+            aria-label="Remove a host"
+            aria-controls="arch-svg"
+          >−</button>
+          <span class="text-secondary">Hosts:</span>
+          <output id="host-count" class="inline-block w-6 text-center font-mono font-semibold text-fg">{DEFAULT_HOSTS}</output>
+          <button
+            type="button"
+            class="host-btn"
+            data-action="inc"
+            aria-label="Add a host"
+            aria-controls="arch-svg"
+          >+</button>
         </div>
 
-        <!-- Arrow -->
-        <svg class="mt-10 h-4 w-10 shrink-0 text-muted lg:mt-12 lg:w-14" fill="none" viewBox="0 0 56 16" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M2 8h48m0 0l-6-5m6 5l-6 5" />
+        <svg
+          id="arch-svg"
+          viewBox={`0 0 ${VB_W} ${VB_H}`}
+          class="block w-full h-auto select-none"
+          data-host-count={DEFAULT_HOSTS}
+          role="group"
+          aria-label="Data flow: agents to MQTT broker to hub to outputs"
+        >
+          <defs>
+            <filter id="packet-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="1.8" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <linearGradient id="edge-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="var(--color-accent)" stop-opacity="0.3" />
+              <stop offset="100%" stop-color="var(--color-info)" stop-opacity="0.3" />
+            </linearGradient>
+          </defs>
+
+          <!-- Edges -->
+          <g id="edges" class="edges">
+            {initialAgentYs.map((y, i) => (
+              <path id={`edge-agent-${i}`} d={agentEdge(y)} class="edge" />
+            ))}
+            <path id="edge-mqtt-hub" d={mqttEdge()} class="edge" />
+            {outputs.map((o, i) => (
+              <path id={`edge-output-${i}`} d={hubEdge(o.y)} class="edge" />
+            ))}
+          </g>
+
+          <!-- Agent column (rendered server-side at DEFAULT_HOSTS, JS regenerates on +/-) -->
+          <g id="agents">
+            {initialAgentYs.map((y, i) => (
+              <g class="node agent-node" data-id="agent" tabindex="0" role="button" aria-label={`Agent on host ${i + 1}`}>
+                <rect
+                  x={AGENT_CX - AGENT_W / 2}
+                  y={y - AGENT_H / 2}
+                  width={AGENT_W}
+                  height={AGENT_H}
+                  rx="12"
+                  class="node-rect agent-rect"
+                />
+                <circle cx={AGENT_CX - AGENT_W / 2 + 22} cy={y} r="5" class="node-led" />
+                <text x={AGENT_CX - AGENT_W / 2 + 38} y={y + 5} class="node-label">host-{i + 1}</text>
+              </g>
+            ))}
+          </g>
+
+          <!-- MQTT -->
+          <g class="node mqtt-node" data-id="mqtt" tabindex="0" role="button" aria-label="Mosquitto MQTT broker">
+            <rect
+              x={MQTT_CX - 70}
+              y={MQTT_Y - 26}
+              width="140"
+              height="52"
+              rx="12"
+              class="node-rect mqtt-rect"
+            />
+            <text x={MQTT_CX} y={MQTT_Y - 3} class="node-label" text-anchor="middle">MQTT</text>
+            <text x={MQTT_CX} y={MQTT_Y + 14} class="node-sublabel" text-anchor="middle">Mosquitto</text>
+          </g>
+
+          <!-- Hub -->
+          <g class="node hub-node" data-id="hub" tabindex="0" role="button" aria-label="Hub — web UI and insights engine">
+            <rect
+              x={HUB_CX - 70}
+              y={HUB_Y - 30}
+              width="140"
+              height="60"
+              rx="12"
+              class="node-rect hub-rect"
+            />
+            <text x={HUB_CX} y={HUB_Y - 4} class="node-label hub-label" text-anchor="middle">Hub</text>
+            <text x={HUB_CX} y={HUB_Y + 14} class="node-sublabel" text-anchor="middle">SQLite + Insights</text>
+          </g>
+
+          <!-- Outputs -->
+          <g id="outputs">
+            {outputs.map((o) => (
+              <g class="node output-node" data-id={o.id} tabindex="0" role="button" aria-label={o.label}>
+                <rect
+                  x={OUT_LEFT}
+                  y={o.y - OUT_H / 2}
+                  width={OUT_W}
+                  height={OUT_H}
+                  rx="10"
+                  class="node-rect output-rect"
+                />
+                <text x={OUT_CX} y={o.y + 5} class="node-label" text-anchor="middle">{o.label}</text>
+              </g>
+            ))}
+          </g>
+
+          <!-- Packets: injected by client-side script (skipped under prefers-reduced-motion) -->
+          <g id="packets" filter="url(#packet-glow)"></g>
         </svg>
+      </div>
 
-        <!-- MQTT -->
-        <div class="flex flex-col items-center gap-3">
-          <div class="w-32 rounded-xl border border-border bg-bg-secondary py-4 text-center lg:w-36 lg:py-5">
-            <svg class="mx-auto h-6 w-6 text-warning lg:h-7 lg:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
-            </svg>
-            <div class="mt-2 text-sm font-semibold text-warning lg:text-base">MQTT</div>
-            <div class="mt-0.5 text-xs text-muted lg:text-sm">Mosquitto</div>
-          </div>
-        </div>
-
-        <!-- Arrow -->
-        <svg class="mt-10 h-4 w-10 shrink-0 text-muted lg:mt-12 lg:w-14" fill="none" viewBox="0 0 56 16" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M2 8h48m0 0l-6-5m6 5l-6 5" />
-        </svg>
-
-        <!-- Hub -->
-        <div class="flex flex-col items-center gap-3">
-          <div class="w-32 rounded-xl border border-accent/30 bg-accent/5 py-4 text-center lg:w-36 lg:py-5">
-            <svg class="mx-auto h-6 w-6 text-accent lg:h-7 lg:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
-            </svg>
-            <div class="mt-2 text-sm font-semibold text-accent lg:text-base">Hub</div>
-            <div class="mt-0.5 text-xs text-muted lg:text-sm">SQLite + Insights</div>
-          </div>
-        </div>
-
-        <!-- Arrow -->
-        <svg class="mt-10 h-4 w-10 shrink-0 text-muted lg:mt-12 lg:w-14" fill="none" viewBox="0 0 56 16" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M2 8h48m0 0l-6-5m6 5l-6 5" />
-        </svg>
-
-        <!-- Outputs -->
-        <div class="flex flex-col items-center gap-3">
-          <div class="w-32 rounded-xl border border-border bg-bg-secondary py-4 text-center lg:w-36 lg:py-5">
-            <svg class="mx-auto h-6 w-6 text-info lg:h-7 lg:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
-            </svg>
-            <div class="mt-2 text-sm font-semibold text-info lg:text-base">Outputs</div>
-            <div class="mt-0.5 text-xs text-muted lg:text-sm">&nbsp;</div>
-          </div>
-          <div class="flex flex-wrap justify-center gap-2">
-            <span class="rounded-full bg-info/10 px-2.5 py-0.5 text-xs text-info">Web UI</span>
-            <span class="rounded-full bg-info/10 px-2.5 py-0.5 text-xs text-info">Email</span>
-            <span class="rounded-full bg-info/10 px-2.5 py-0.5 text-xs text-info">Webhooks</span>
-          </div>
+      <!-- Mobile: stacked, still clickable (sm:hidden) -->
+      <div class="arch-mobile flex flex-col items-stretch gap-2 sm:hidden">
+        <button type="button" class="m-node" data-id="agent">
+          <span class="m-node-title">Agent</span>
+          <span class="m-node-sub">per host · collects metrics</span>
+        </button>
+        <div class="m-arrow">↓</div>
+        <button type="button" class="m-node" data-id="mqtt">
+          <span class="m-node-title">MQTT</span>
+          <span class="m-node-sub">Mosquitto broker</span>
+        </button>
+        <div class="m-arrow">↓</div>
+        <button type="button" class="m-node m-node-primary" data-id="hub">
+          <span class="m-node-title">Hub</span>
+          <span class="m-node-sub">SQLite + Insights</span>
+        </button>
+        <div class="m-arrow">↓</div>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" class="m-node m-node-sm" data-id="webui"><span>Web UI</span></button>
+          <button type="button" class="m-node m-node-sm" data-id="email"><span>Email</span></button>
+          <button type="button" class="m-node m-node-sm" data-id="webhooks"><span>Webhooks</span></button>
         </div>
       </div>
 
-      <!-- Mobile: vertical flow -->
-      <div class="flex flex-col items-center gap-3 sm:hidden">
-        <div class="rounded-xl border border-border bg-bg-secondary px-6 py-3 text-center">
-          <div class="text-sm font-semibold text-accent">Agents</div>
-          <div class="mt-0.5 text-xs text-muted">Per host / node</div>
-        </div>
-        <div class="flex gap-2">
-          <span class="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] text-accent">Docker</span>
-          <span class="rounded-full bg-accent/10 px-2 py-0.5 text-[10px] text-accent">K8s</span>
-        </div>
-        <svg class="h-6 w-4 text-muted" fill="none" viewBox="0 0 16 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8 2v18m0 0l-5-5m5 5l5-5" />
-        </svg>
-        <div class="rounded-xl border border-border bg-bg-secondary px-6 py-3 text-center">
-          <div class="text-sm font-semibold text-warning">MQTT</div>
-          <div class="mt-0.5 text-xs text-muted">Mosquitto</div>
-        </div>
-        <svg class="h-6 w-4 text-muted" fill="none" viewBox="0 0 16 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8 2v18m0 0l-5-5m5 5l5-5" />
-        </svg>
-        <div class="rounded-xl border border-accent/30 bg-accent/5 px-6 py-3 text-center">
-          <div class="text-sm font-semibold text-accent">Hub</div>
-          <div class="mt-0.5 text-xs text-muted">SQLite + Insights</div>
-        </div>
-        <svg class="h-6 w-4 text-muted" fill="none" viewBox="0 0 16 24" stroke="currentColor" stroke-width="1.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8 2v18m0 0l-5-5m5 5l5-5" />
-        </svg>
-        <div class="rounded-xl border border-border bg-bg-secondary px-6 py-3 text-center">
-          <div class="text-sm font-semibold text-info">Outputs</div>
-        </div>
-        <div class="flex flex-wrap justify-center gap-2">
-          <span class="rounded-full bg-info/10 px-2 py-0.5 text-[10px] text-info">Web UI</span>
-          <span class="rounded-full bg-info/10 px-2 py-0.5 text-[10px] text-info">Email</span>
-          <span class="rounded-full bg-info/10 px-2 py-0.5 text-[10px] text-info">Webhooks</span>
+      <!-- Detail panel (desktop + mobile share this) -->
+      <div
+        id="arch-detail"
+        class="mt-5 min-h-[110px] rounded-lg border border-border-light bg-bg-secondary p-4"
+        aria-live="polite"
+      >
+        <div class="arch-detail-empty text-sm text-muted">
+          Click any node above to see what it does. Or add hosts to watch the topology grow — every new host runs one more agent.
         </div>
       </div>
-
-      <p class="mt-6 text-center text-xs text-muted sm:text-sm">
-        Three containers on one server to start. Scale to more hosts by running one more agent on each.
-      </p>
     </div>
   </div>
 </section>
+
+<style>
+  .arch-section .edge {
+    fill: none;
+    stroke: var(--color-border);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    transition: stroke 240ms ease, stroke-width 240ms ease, opacity 240ms ease;
+  }
+  .arch-section .edge.edge-dim {
+    opacity: 0.35;
+  }
+  .arch-section .edge.edge-active {
+    stroke: var(--color-accent);
+    stroke-width: 2;
+  }
+
+  .arch-section .node {
+    cursor: pointer;
+    transition: transform 220ms ease;
+    transform-origin: center;
+    transform-box: fill-box;
+    outline: none;
+  }
+  .arch-section .node:hover,
+  .arch-section .node:focus-visible,
+  .arch-section .node[data-active="true"] {
+    transform: scale(1.035);
+  }
+  .arch-section .node:focus-visible .node-rect {
+    stroke: var(--color-info);
+    stroke-width: 2;
+  }
+
+  .arch-section .node-rect {
+    fill: var(--color-bg-secondary);
+    stroke: var(--color-border);
+    stroke-width: 1.25;
+    transition: stroke 220ms ease, stroke-width 220ms ease, fill 220ms ease;
+  }
+  .arch-section .node[data-active="true"] .node-rect {
+    stroke: var(--color-accent);
+    stroke-width: 1.75;
+  }
+
+  /* Per-node accent tints */
+  .arch-section .agent-rect { stroke: color-mix(in srgb, var(--color-accent) 40%, var(--color-border)); }
+  .arch-section .mqtt-rect  { stroke: color-mix(in srgb, var(--color-warning) 50%, var(--color-border)); }
+  .arch-section .hub-rect   { fill: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-secondary)); stroke: color-mix(in srgb, var(--color-accent) 55%, var(--color-border)); }
+  .arch-section .output-rect{ stroke: color-mix(in srgb, var(--color-info) 45%, var(--color-border)); }
+
+  .arch-section .node-label {
+    fill: var(--color-fg);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+  }
+  .arch-section .hub-label {
+    fill: var(--color-accent);
+  }
+  .arch-section .node-sublabel {
+    fill: var(--color-muted);
+    font-size: 11px;
+    font-family: inherit;
+  }
+  .arch-section .node-led {
+    fill: var(--color-accent);
+    opacity: 0.8;
+    animation: led-pulse 2.6s ease-in-out infinite;
+  }
+  @keyframes led-pulse {
+    0%, 100% { opacity: 0.25; }
+    50%      { opacity: 1; }
+  }
+
+  .arch-section .packet {
+    fill: var(--color-accent);
+  }
+
+  .arch-section .host-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    color: var(--color-fg);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 160ms ease, border-color 160ms ease, transform 120ms ease;
+  }
+  .arch-section .host-btn:hover:not(:disabled) {
+    border-color: var(--color-accent);
+    background: color-mix(in srgb, var(--color-accent) 10%, var(--color-bg-secondary));
+  }
+  .arch-section .host-btn:active:not(:disabled) {
+    transform: scale(0.94);
+  }
+  .arch-section .host-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  /* Mobile node cards */
+  .arch-section .m-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-secondary);
+    color: var(--color-fg);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 160ms ease, background 160ms ease;
+  }
+  .arch-section .m-node[data-active="true"],
+  .arch-section .m-node:hover {
+    border-color: var(--color-accent);
+  }
+  .arch-section .m-node-primary {
+    background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-secondary));
+    border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+  }
+  .arch-section .m-node-sm {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  .arch-section .m-node-title {
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .arch-section .m-node-sub {
+    font-size: 11px;
+    color: var(--color-muted);
+  }
+  .arch-section .m-arrow {
+    text-align: center;
+    color: var(--color-muted);
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  /* Detail panel content */
+  .arch-section .arch-detail-content h3 {
+    margin: 0 0 2px 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-fg);
+  }
+  .arch-section .arch-detail-content .arch-detail-kicker {
+    display: inline-block;
+    margin-bottom: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--color-accent);
+  }
+  .arch-section .arch-detail-content p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--color-secondary);
+    line-height: 1.55;
+  }
+  .arch-section .arch-detail-content p + p {
+    margin-top: 6px;
+  }
+  .arch-section .arch-detail-content code {
+    font-size: 12px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--color-surface);
+    color: var(--color-fg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .arch-section .node,
+    .arch-section .edge,
+    .arch-section .node-rect,
+    .arch-section .node-led,
+    .arch-section .host-btn {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    var DETAILS = {
+      agent: {
+        kicker: 'Per host',
+        title: 'Agent',
+        body:
+          '<p>Runs on each monitored host. Collects container stats (Docker or Kubernetes), CPU, memory, load, disk, GPU, temperature, network &amp; disk I/O. Publishes a batch to MQTT every 5 minutes.</p>' +
+          '<p>~20 MB RAM. On Kubernetes it runs as a DaemonSet — one pod per node.</p>',
+      },
+      mqtt: {
+        kicker: 'The pipe',
+        title: 'MQTT (Mosquitto)',
+        body:
+          '<p>Agents publish metric batches on <code>insightd/hosts/&lt;hostId&gt;/…</code> topics. The hub subscribes to all of them. Any MQTT broker will work — Mosquitto is the default and the broker stays up across hub restarts.</p>',
+      },
+      hub: {
+        kicker: 'The brains',
+        title: 'Hub',
+        body:
+          '<p>Stores snapshots in SQLite. Runs the insights engine (time-of-day baselines, anomaly detection, health scores), the signal-driven diagnosis engine, and the alert evaluator.</p>' +
+          '<p>Serves the React dashboard on port 3000 and renders email digests and webhook payloads.</p>',
+      },
+      webui: {
+        kicker: 'Output',
+        title: 'Web UI',
+        body:
+          '<p>The React dashboard: hosts, containers, stacks, alerts, insights, charts. Every metric has a baseline-aware personality. Diagnosis findings are one click from the alert.</p>' +
+          '<p>Keyboard-shortcut driven. Opt-in public status page at <code>/status</code>.</p>',
+      },
+      email: {
+        kicker: 'Output',
+        title: 'Email',
+        body:
+          '<p>Weekly digest + real-time alerts. Alert emails include the diagnosis finding inline so you know <em>why</em> it fired, not just that it did.</p>' +
+          '<p>SMTP is configured from <strong>Settings → Email</strong> — no restart needed.</p>',
+      },
+      webhooks: {
+        kicker: 'Output',
+        title: 'Webhooks',
+        body:
+          '<p>Slack, Discord, Telegram, ntfy, or any generic HTTP endpoint. Each channel has a "Test" button so you know it works before the next incident.</p>',
+      },
+    };
+
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Layout constants (mirror the frontmatter)
+    var AGENT_CX = 110, AGENT_W = 150, AGENT_H = 52;
+    var MQTT_LEFT = 290, MQTT_Y = 200;
+    var HUB_LEFT = 500, HUB_RIGHT = 640, HUB_Y = 200;
+    var MQTT_RIGHT = 430;
+    var OUT_LEFT = 710;
+    var OUT_YS = [122, 200, 278];
+    var NS = 'http://www.w3.org/2000/svg';
+
+    function agentYs(n) {
+      var top = 56, bot = 344;
+      var span = bot - top;
+      var step = span / n;
+      var out = [];
+      for (var i = 0; i < n; i++) out.push(Math.round(top + step * (i + 0.5)));
+      return out;
+    }
+    function agentEdgeD(y) {
+      return 'M ' + (AGENT_CX + AGENT_W / 2) + ' ' + y +
+        ' C 235 ' + y + ' 235 ' + MQTT_Y + ' ' + MQTT_LEFT + ' ' + MQTT_Y;
+    }
+    function mqttEdgeD() {
+      return 'M ' + MQTT_RIGHT + ' ' + MQTT_Y + ' L ' + HUB_LEFT + ' ' + HUB_Y;
+    }
+    function hubEdgeD(oy) {
+      return 'M ' + HUB_RIGHT + ' ' + HUB_Y +
+        ' C ' + (HUB_RIGHT + 45) + ' ' + HUB_Y +
+        ' ' + (HUB_RIGHT + 45) + ' ' + oy +
+        ' ' + OUT_LEFT + ' ' + oy;
+    }
+
+    function makeAgentNode(i, y) {
+      var g = document.createElementNS(NS, 'g');
+      g.setAttribute('class', 'node agent-node');
+      g.setAttribute('data-id', 'agent');
+      g.setAttribute('tabindex', '0');
+      g.setAttribute('role', 'button');
+      g.setAttribute('aria-label', 'Agent on host ' + (i + 1));
+      g.innerHTML =
+        '<rect x="' + (AGENT_CX - AGENT_W / 2) + '" y="' + (y - AGENT_H / 2) +
+        '" width="' + AGENT_W + '" height="' + AGENT_H + '" rx="12" class="node-rect agent-rect" />' +
+        '<circle cx="' + (AGENT_CX - AGENT_W / 2 + 22) + '" cy="' + y + '" r="5" class="node-led" />' +
+        '<text x="' + (AGENT_CX - AGENT_W / 2 + 38) + '" y="' + (y + 5) + '" class="node-label">host-' + (i + 1) + '</text>';
+      return g;
+    }
+
+    function makePacket(d, delay, dur) {
+      var c = document.createElementNS(NS, 'circle');
+      c.setAttribute('r', '3.5');
+      c.setAttribute('class', 'packet');
+      c.setAttribute('cx', '0');
+      c.setAttribute('cy', '0');
+      var m = document.createElementNS(NS, 'animateMotion');
+      m.setAttribute('dur', dur + 's');
+      m.setAttribute('repeatCount', 'indefinite');
+      m.setAttribute('path', d);
+      m.setAttribute('begin', delay + 's');
+      m.setAttribute('rotate', 'auto');
+      c.appendChild(m);
+      return c;
+    }
+
+    function render(n) {
+      var svg = document.getElementById('arch-svg');
+      if (!svg) return;
+      svg.dataset.hostCount = String(n);
+
+      var ys = agentYs(n);
+
+      // Agents
+      var agentsG = svg.querySelector('#agents');
+      agentsG.innerHTML = '';
+      for (var i = 0; i < n; i++) {
+        agentsG.appendChild(makeAgentNode(i, ys[i]));
+      }
+
+      // Edges: keep the static MQTT->Hub and Hub->Outputs paths, rebuild agent->MQTT paths.
+      var edgesG = svg.querySelector('#edges');
+      Array.prototype.forEach.call(edgesG.querySelectorAll('[id^="edge-agent-"]'), function (p) { p.remove(); });
+      for (var j = 0; j < n; j++) {
+        var p = document.createElementNS(NS, 'path');
+        p.setAttribute('id', 'edge-agent-' + j);
+        p.setAttribute('d', agentEdgeD(ys[j]));
+        p.setAttribute('class', 'edge');
+        edgesG.insertBefore(p, edgesG.firstChild);
+      }
+
+      // Packets
+      var packetsG = svg.querySelector('#packets');
+      packetsG.innerHTML = '';
+      if (!reduceMotion) {
+        var DUR = 2.6;
+        for (var k = 0; k < n; k++) {
+          var d1 = agentEdgeD(ys[k]);
+          packetsG.appendChild(makePacket(d1, 0, DUR));
+          packetsG.appendChild(makePacket(d1, DUR / 2 + (k * 0.13) % 0.6, DUR));
+        }
+        packetsG.appendChild(makePacket(mqttEdgeD(), 0, DUR * 0.65));
+        packetsG.appendChild(makePacket(mqttEdgeD(), DUR * 0.32, DUR * 0.65));
+        for (var m2 = 0; m2 < OUT_YS.length; m2++) {
+          var d2 = hubEdgeD(OUT_YS[m2]);
+          packetsG.appendChild(makePacket(d2, 0 + m2 * 0.3, DUR));
+          packetsG.appendChild(makePacket(d2, DUR / 2 + m2 * 0.15, DUR));
+        }
+      }
+
+      var activeId = svg.getAttribute('data-active-id');
+      if (activeId) {
+        var sel = svg.querySelector('[data-id="' + activeId + '"]');
+        if (sel) sel.setAttribute('data-active', 'true');
+      }
+
+      var out = document.getElementById('host-count');
+      if (out) out.textContent = String(n);
+      var dec = document.querySelector('[data-action="dec"]');
+      var inc = document.querySelector('[data-action="inc"]');
+      if (dec) dec.disabled = (n <= 1);
+      if (inc) inc.disabled = (n >= 7);
+    }
+
+    function setActive(id) {
+      var all = document.querySelectorAll('#arch-svg [data-id], .arch-mobile [data-id]');
+      Array.prototype.forEach.call(all, function (el) {
+        if (el.getAttribute('data-id') === id) {
+          el.setAttribute('data-active', 'true');
+        } else {
+          el.removeAttribute('data-active');
+        }
+      });
+      var svg = document.getElementById('arch-svg');
+      if (svg) svg.setAttribute('data-active-id', id);
+    }
+
+    function showDetail(id) {
+      var d = DETAILS[id];
+      if (!d) return;
+      var panel = document.getElementById('arch-detail');
+      panel.innerHTML =
+        '<div class="arch-detail-content">' +
+          '<div class="arch-detail-kicker">' + d.kicker + '</div>' +
+          '<h3>' + d.title + '</h3>' +
+          d.body +
+        '</div>';
+      setActive(id);
+    }
+
+    function handleClick(e) {
+      var el = e.target.closest('[data-id]');
+      if (!el) return;
+      e.preventDefault();
+      showDetail(el.getAttribute('data-id'));
+    }
+
+    function handleKey(e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var el = e.target.closest('[data-id]');
+      if (!el) return;
+      e.preventDefault();
+      showDetail(el.getAttribute('data-id'));
+    }
+
+    function init() {
+      var svg = document.getElementById('arch-svg');
+      if (!svg) return;
+
+      var dec = document.querySelector('[data-action="dec"]');
+      var inc = document.querySelector('[data-action="inc"]');
+      if (dec) dec.addEventListener('click', function () {
+        var n = parseInt(svg.dataset.hostCount || '3', 10);
+        if (n > 1) render(n - 1);
+      });
+      if (inc) inc.addEventListener('click', function () {
+        var n = parseInt(svg.dataset.hostCount || '3', 10);
+        if (n < 7) render(n + 1);
+      });
+
+      render(parseInt(svg.dataset.hostCount || '3', 10));
+
+      svg.addEventListener('click', handleClick);
+      svg.addEventListener('keydown', handleKey);
+
+      var mobile = document.querySelector('.arch-mobile');
+      if (mobile) {
+        mobile.addEventListener('click', handleClick);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  })();
+</script>
