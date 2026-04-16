@@ -1,32 +1,16 @@
 ---
 import CommandBlock from './CommandBlock.astro';
 
-const standaloneCmd = `docker run -d \\
-  --name insightd \\
-  --restart unless-stopped \\
-  -p 3000:3000 \\
-  -v /var/run/docker.sock:/var/run/docker.sock:ro \\
-  -v /:/host:ro \\
-  -v insightd-data:/data \\
-  -e TZ=UTC \\
-  andreas404/insightd-hub:latest`;
+const dockerCmd = `mkdir -p ~/insightd && cd ~/insightd
 
-const multiCmd = `# 1. On your main server — start the hub stack
-git clone https://github.com/goldenproductions/insightd.git
-cd insightd
-docker compose -f docker-compose.hub.yml up -d
+# mosquitto.conf + docker-compose.yml are in the Quick Start guide.
+# Replace CHANGEME with your MQTT password.
+docker run --rm -v "$PWD:/w" eclipse-mosquitto:2 \\
+  mosquitto_passwd -b -c /w/passwd insightd CHANGEME
 
-# 2. On each remote server — run an agent
-docker run -d \\
-  --name insightd-agent \\
-  --restart unless-stopped \\
-  -v /var/run/docker.sock:/var/run/docker.sock \\
-  -v /:/host:ro \\
-  -e INSIGHTD_HOST_ID=my-server \\
-  -e INSIGHTD_MQTT_URL=mqtt://hub-ip:1883 \\
-  -e INSIGHTD_MQTT_USER=insightd \\
-  -e INSIGHTD_MQTT_PASS=your-mqtt-password \\
-  andreas404/insightd-agent:latest`;
+docker compose up -d
+
+# Then open http://your-server:3000 and follow the setup wizard`;
 
 const k8sCmd = `kubectl apply -f https://raw.githubusercontent.com/goldenproductions/insightd/main/agent/k8s/rbac.yaml
 kubectl apply -f https://raw.githubusercontent.com/goldenproductions/insightd/main/agent/k8s/daemonset.yaml`;
@@ -36,7 +20,7 @@ kubectl apply -f https://raw.githubusercontent.com/goldenproductions/insightd/ma
   <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-5xl lg:px-8">
     <div class="text-center">
       <h2 class="text-2xl font-bold text-fg sm:text-3xl">Up and running in minutes</h2>
-      <p class="mt-3 text-secondary">No .env file needed. Open port 3000 and follow the setup wizard.</p>
+      <p class="mt-3 text-secondary">Three containers on one server. To add a host, you run one more agent — that's the only difference.</p>
     </div>
 
     <!-- Tabs -->
@@ -45,20 +29,11 @@ kubectl apply -f https://raw.githubusercontent.com/goldenproductions/insightd/ma
         <button
           role="tab"
           aria-selected="true"
-          aria-controls="tab-standalone"
+          aria-controls="tab-docker"
           class="install-tab border-b-2 border-accent px-4 py-2.5 text-sm font-medium text-fg"
-          data-tab="standalone"
+          data-tab="docker"
         >
-          Single Server
-        </button>
-        <button
-          role="tab"
-          aria-selected="false"
-          aria-controls="tab-multi"
-          class="install-tab border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-muted hover:text-secondary"
-          data-tab="multi"
-        >
-          Multi-Server
+          Docker
         </button>
         <button
           role="tab"
@@ -72,24 +47,17 @@ kubectl apply -f https://raw.githubusercontent.com/goldenproductions/insightd/ma
       </div>
 
       <div class="mt-6">
-        <div id="tab-standalone" class="install-panel" role="tabpanel">
-          <CommandBlock code={standaloneCmd} />
+        <div id="tab-docker" class="install-panel" role="tabpanel">
+          <CommandBlock code={dockerCmd} />
           <p class="mt-4 text-sm text-muted">
-            Open <code class="rounded bg-surface px-1.5 py-0.5 text-xs text-secondary">http://localhost:3000</code> and follow the setup wizard.
-          </p>
-        </div>
-
-        <div id="tab-multi" class="install-panel hidden" role="tabpanel">
-          <CommandBlock code={multiCmd} />
-          <p class="mt-4 text-sm text-muted">
-            The hub serves the dashboard. Each agent reports its host's containers and system metrics via MQTT.
+            Mosquitto + hub + one local agent via Docker Compose. The setup wizard configures the admin password and email; the Settings page covers alerts, webhooks, AI diagnosis, and retention.
           </p>
         </div>
 
         <div id="tab-k8s" class="install-panel hidden" role="tabpanel">
           <CommandBlock code={k8sCmd} />
           <p class="mt-4 text-sm text-muted">
-            Deploys as a DaemonSet — one pod per node. Edit the daemonset.yaml to set your MQTT URL first.
+            The agent runs as a DaemonSet — one pod per node — reporting to the same hub and Mosquitto broker as your Docker hosts. Edit the manifest to set your MQTT URL first.
           </p>
         </div>
       </div>
