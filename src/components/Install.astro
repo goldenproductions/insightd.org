@@ -1,14 +1,24 @@
 ---
 import CommandBlock from './CommandBlock.astro';
 
-const dockerCmd = `mkdir -p ~/insightd && cd ~/insightd
+const oneLiner = `curl -sSL https://insightd.org/install.sh | bash`;
 
-# mosquitto.conf + docker-compose.yml are in the Quick Start guide.
-# Replace CHANGEME with your MQTT password.
-docker run --rm -v "$PWD:/w" eclipse-mosquitto:2 \\
-  mosquitto_passwd -b -c /w/passwd insightd CHANGEME
+const manualCmd = `mkdir -p ~/insightd && cd ~/insightd
 
-docker compose up -d
+# Download the Compose file
+curl -sSLO https://raw.githubusercontent.com/goldenproductions/insightd/main/docker-compose.hub.yml
+
+# Write a .env with a generated MQTT password
+cat > .env <<EOF
+INSIGHTD_MQTT_USER=insightd
+INSIGHTD_MQTT_PASS=$(openssl rand -hex 24)
+INSIGHTD_HOST_ID=hub-server
+INSIGHTD_ALLOW_UPDATES=true
+INSIGHTD_ALLOW_ACTIONS=true
+EOF
+chmod 600 .env
+
+docker compose -f docker-compose.hub.yml up -d
 
 # Then open http://your-server:3000 and follow the setup wizard`;
 
@@ -19,7 +29,7 @@ kubectl apply -f https://raw.githubusercontent.com/goldenproductions/insightd/ma
 <section id="install" class="py-16 sm:py-20 lg:py-20">
   <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:max-w-5xl lg:px-8">
     <div class="text-center">
-      <h2 class="text-2xl font-bold text-fg sm:text-3xl">Up and running in minutes</h2>
+      <h2 class="text-2xl font-bold text-fg sm:text-3xl">Up and running in one command</h2>
       <p class="mt-3 text-secondary">Three containers on one server. To add a host, you run one more agent — that's the only difference.</p>
     </div>
 
@@ -48,10 +58,22 @@ kubectl apply -f https://raw.githubusercontent.com/goldenproductions/insightd/ma
 
       <div class="mt-6">
         <div id="tab-docker" class="install-panel" role="tabpanel">
-          <CommandBlock code={dockerCmd} />
+          <CommandBlock code={oneLiner} />
           <p class="mt-4 text-sm text-muted">
-            Mosquitto + hub + one local agent via Docker Compose. The setup wizard configures the admin password and email; the Settings page covers alerts, webhooks, AI diagnosis, and retention.
+            Installs Mosquitto + hub + a local agent with one command. Generates a random MQTT password, runs <code class="rounded bg-surface px-1 py-0.5 text-xs text-secondary">docker compose up</code>, and waits for the hub to come online. Re-running is safe — existing credentials are preserved.
           </p>
+
+          <details class="mt-4 rounded-lg border border-border bg-bg-secondary">
+            <summary class="cursor-pointer select-none px-4 py-2.5 text-sm text-secondary hover:text-fg">
+              Prefer to run it yourself?
+            </summary>
+            <div class="border-t border-border px-4 py-3">
+              <CommandBlock code={manualCmd} />
+              <p class="mt-3 text-xs text-muted">
+                The script above is <a href="https://github.com/goldenproductions/insightd.org/blob/main/public/install.sh" class="text-accent hover:text-accent-dark" target="_blank" rel="noopener noreferrer">~90 lines of bash</a>. Read it before piping to a shell if you'd rather.
+              </p>
+            </div>
+          </details>
         </div>
 
         <div id="tab-k8s" class="install-panel hidden" role="tabpanel">
