@@ -1,0 +1,26 @@
+---
+interface Props {
+  label?: string;
+  class?: string;
+}
+
+const { label, class: className = '' } = Astro.props;
+---
+
+<div class={`overflow-hidden rounded-xl border border-border shadow-lg ${className}`}>
+  <!-- Chrome bar -->
+  <div class="flex items-center gap-2 border-b border-border bg-surface px-4 py-2.5">
+    <div class="flex gap-1.5">
+      <div class="h-3 w-3 rounded-full bg-danger/60"></div>
+      <div class="h-3 w-3 rounded-full bg-warning/60"></div>
+      <div class="h-3 w-3 rounded-full bg-success/60"></div>
+    </div>
+    {label && (
+      <span class="ml-2 text-xs text-muted">{label}</span>
+    )}
+  </div>
+  <!-- Content area -->
+  <div class="bg-bg-secondary">
+    <slot />
+  </div>
+</div>

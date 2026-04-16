@@ -1,0 +1,138 @@
+---
+import CommandBlock from './CommandBlock.astro';
+
+const standaloneCmd = `docker run -d \\
+  --name insightd \\
+  --restart unless-stopped \\
+  -p 3000:3000 \\
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \\
+  -v /:/host:ro \\
+  -v insightd-data:/data \\
+  -e TZ=UTC \\
+  andreas404/insightd-hub:latest`;
+
+const multiCmd = `# 1. On your main server — start the hub stack
+git clone https://github.com/goldenproductions/insightd.git
+cd insightd
+docker compose -f docker-compose.hub.yml up -d
+
+# 2. On each remote server — run an agent
+docker run -d \\
+  --name insightd-agent \\
+  --restart unless-stopped \\
+  -v /var/run/docker.sock:/var/run/docker.sock \\
+  -v /:/host:ro \\
+  -e INSIGHTD_HOST_ID=my-server \\
+  -e INSIGHTD_MQTT_URL=mqtt://hub-ip:1883 \\
+  -e INSIGHTD_MQTT_USER=insightd \\
+  -e INSIGHTD_MQTT_PASS=your-mqtt-password \\
+  andreas404/insightd-agent:latest`;
+
+const k8sCmd = `kubectl apply -f https://raw.githubusercontent.com/goldenproductions/insightd/main/agent/k8s/rbac.yaml
+kubectl apply -f https://raw.githubusercontent.com/goldenproductions/insightd/main/agent/k8s/daemonset.yaml`;
+---
+
+<section id="install" class="py-16 sm:py-20">
+  <div class="mx-auto max-w-4xl px-4 sm:px-6">
+    <div class="text-center">
+      <h2 class="text-2xl font-bold text-fg sm:text-3xl">Up and running in minutes</h2>
+      <p class="mt-3 text-secondary">No .env file needed. Open port 3000 and follow the setup wizard.</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="mt-10">
+      <div class="flex border-b border-border" role="tablist">
+        <button
+          role="tab"
+          aria-selected="true"
+          aria-controls="tab-standalone"
+          class="install-tab border-b-2 border-accent px-4 py-2.5 text-sm font-medium text-fg"
+          data-tab="standalone"
+        >
+          Single Server
+        </button>
+        <button
+          role="tab"
+          aria-selected="false"
+          aria-controls="tab-multi"
+          class="install-tab border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-muted hover:text-secondary"
+          data-tab="multi"
+        >
+          Multi-Server
+        </button>
+        <button
+          role="tab"
+          aria-selected="false"
+          aria-controls="tab-k8s"
+          class="install-tab border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-muted hover:text-secondary"
+          data-tab="k8s"
+        >
+          Kubernetes
+        </button>
+      </div>
+
+      <div class="mt-6">
+        <div id="tab-standalone" class="install-panel" role="tabpanel">
+          <CommandBlock code={standaloneCmd} />
+          <p class="mt-4 text-sm text-muted">
+            Open <code class="rounded bg-surface px-1.5 py-0.5 text-xs text-secondary">http://localhost:3000</code> and follow the setup wizard.
+          </p>
+        </div>
+
+        <div id="tab-multi" class="install-panel hidden" role="tabpanel">
+          <CommandBlock code={multiCmd} />
+          <p class="mt-4 text-sm text-muted">
+            The hub serves the dashboard. Each agent reports its host's containers and system metrics via MQTT.
+          </p>
+        </div>
+
+        <div id="tab-k8s" class="install-panel hidden" role="tabpanel">
+          <CommandBlock code={k8sCmd} />
+          <p class="mt-4 text-sm text-muted">
+            Deploys as a DaemonSet — one pod per node. Edit the daemonset.yaml to set your MQTT URL first.
+          </p>
+        </div>
+      </div>
+
+      <div class="mt-6 text-center">
+        <a
+          href="https://docs.insightd.org/guides/quick-start/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center text-sm text-accent hover:text-accent-dark transition-colors"
+        >
+          Full installation guide
+          <svg class="ml-1 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script is:inline>
+  (function() {
+    var tabs = document.querySelectorAll('.install-tab');
+    var panels = document.querySelectorAll('.install-panel');
+
+    tabs.forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        var target = tab.getAttribute('data-tab');
+
+        tabs.forEach(function(t) {
+          var isActive = t.getAttribute('data-tab') === target;
+          t.setAttribute('aria-selected', isActive ? 'true' : 'false');
+          t.classList.toggle('border-accent', isActive);
+          t.classList.toggle('text-fg', isActive);
+          t.classList.toggle('border-transparent', !isActive);
+          t.classList.toggle('text-muted', !isActive);
+        });
+
+        panels.forEach(function(p) {
+          p.classList.toggle('hidden', p.id !== 'tab-' + target);
+        });
+      });
+    });
+  })();
+</script>

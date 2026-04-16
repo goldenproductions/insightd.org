@@ -1,0 +1,34 @@
+---
+interface Props {
+  code: string;
+  lang?: string;
+}
+
+const { code, lang = 'bash' } = Astro.props;
+---
+
+<div class="relative overflow-hidden rounded-lg border border-border bg-[#0f172a]">
+  <div class="flex items-center justify-between border-b border-border/50 px-4 py-2">
+    <span class="text-xs text-muted">{lang}</span>
+    <button
+      class="copy-btn rounded px-2 py-1 text-xs text-muted hover:text-fg hover:bg-surface transition-colors"
+      data-code={code}
+    >
+      Copy
+    </button>
+  </div>
+  <pre class="overflow-x-auto p-4 text-sm leading-relaxed text-slate-300"><code set:html={code} /></pre>
+</div>
+
+<script is:inline>
+  document.querySelectorAll('.copy-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var code = btn.getAttribute('data-code');
+      navigator.clipboard.writeText(code).then(function() {
+        var orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = orig; }, 2000);
+      });
+    });
+  });
+</script>

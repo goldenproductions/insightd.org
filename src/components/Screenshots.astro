@@ -1,0 +1,32 @@
+---
+import BrowserFrame from './BrowserFrame.astro';
+
+const screenshots = [
+  { label: 'Dashboard', description: 'Health score, attention feed, system status' },
+  { label: 'Container Detail', description: 'Metrics, diagnosis, log patterns' },
+  { label: 'Host Detail', description: 'CPU, memory, load, network charts' },
+  { label: 'Insights', description: 'Predictions, trends, anomaly detection' },
+];
+---
+
+<section id="screenshots" class="py-16 sm:py-20">
+  <div class="mx-auto max-w-6xl px-4 sm:px-6">
+    <div class="text-center">
+      <h2 class="text-2xl font-bold text-fg sm:text-3xl">See it in action</h2>
+      <p class="mt-3 text-secondary">A modern, responsive dashboard designed for clarity.</p>
+    </div>
+
+    <div class="mt-10 grid gap-6 sm:grid-cols-2">
+      {screenshots.map(shot => (
+        <BrowserFrame label={`insightd — ${shot.label}`}>
+          <div class="flex aspect-video items-center justify-center bg-gradient-to-br from-[#0f172a] to-[#1e293b] p-6">
+            <div class="text-center">
+              <p class="text-sm font-medium text-secondary">{shot.label}</p>
+              <p class="mt-1 text-xs text-muted">{shot.description}</p>
+            </div>
+          </div>
+        </BrowserFrame>
+      ))}
+    </div>
+  </div>
+</section>
