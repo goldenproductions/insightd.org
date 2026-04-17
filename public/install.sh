@@ -68,6 +68,16 @@ docker compose -f docker-compose.hub.yml pull --quiet 2>/dev/null || true
 log "starting containers"
 docker compose -f docker-compose.hub.yml up -d
 
+# 5a. clean up the bootstrap oneshot. It writes mosquitto.conf + passwd to
+# a named volume and exits — leaving it as a stopped container just
+# clutters the "Containers" list in the UI. Bootstrap is idempotent, so
+# the next `compose up` recreates it and re-runs it harmlessly. Skip the
+# cleanup if it exited non-zero so the failure stays visible for
+# debugging.
+if [ "$(docker inspect -f '{{.State.ExitCode}}' insightd-bootstrap 2>/dev/null)" = "0" ]; then
+  docker rm insightd-bootstrap >/dev/null 2>&1 || true
+fi
+
 # 6. wait for the hub to respond, then print the banner
 log "waiting for hub to come up"
 for _ in $(seq 1 30); do
