@@ -2,10 +2,12 @@
 import BrowserFrame from './BrowserFrame.astro';
 
 const screenshots = [
-  { label: 'Container Detail', src: '/screenshots/container_detail_page.png', alt: 'Container detail page showing diagnosis with evidence, related services, and AI analysis' },
+  { label: 'Hosts', src: '/screenshots/Host_page.png', alt: 'Hosts overview showing all connected servers with online status, runtime, container counts, and health score' },
   { label: 'Host Detail', src: '/screenshots/Host_detail_page.png', alt: 'Host detail page showing CPU, memory, load, and network charts over 24 hours' },
-  { label: 'Container Metrics', src: '/screenshots/container_detail_page_continued.png', alt: 'Container detail page showing CPU, memory, network, and disk I/O charts' },
-  { label: 'Insights', src: '/screenshots/insights_page.png', alt: 'Insights page showing availability and health check warnings with feedback buttons' },
+  { label: 'Container Detail', src: '/screenshots/container_detail_page.png', alt: 'Container detail page showing diagnosis with evidence, related services, charts, and live metrics' },
+  { label: 'Alerts', src: '/screenshots/Alert_page.png', alt: 'Alerts page with Explore-style facet rail filtering by host, namespace, level, and status' },
+  { label: 'Endpoints', src: '/screenshots/Endpoint_page.png', alt: 'HTTP endpoints page with uptime, response time, sparklines, and discovered Kubernetes ingresses' },
+  { label: 'Storage', src: '/screenshots/Storage_page.png', alt: 'Fleet storage overview with disk usage forecasts, Docker volumes, and Kubernetes persistent volumes' },
 ];
 ---
 
