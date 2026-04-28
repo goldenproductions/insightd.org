@@ -4,7 +4,7 @@ const DEFAULT_HOSTS = 3;
 const MAX_HOSTS = 7;
 const MIN_HOSTS = 1;
 
-// Layout constants (must match the <script> below)
+// Layout constants (must match the inline script further down)
 const VB_W = 900;
 const VB_H = 400;
 const AGENT_CX = 110;
@@ -31,7 +31,9 @@ function agentYs(n: number) {
   return Array.from({ length: n }, (_, i) => Math.round(top + step * (i + 0.5)));
 }
 function agentEdge(y: number) {
-  return `M ${AGENT_CX + AGENT_W / 2} ${y} C 235 ${y} 235 ${MQTT_Y} ${MQTT_LEFT} ${MQTT_Y}`;
+  // Cubic with non-crossing control points (cp1.x < cp2.x) for a smooth
+  // diagonal sweep — earlier (235,235) was an L-bend, (250,225) was wavy.
+  return `M ${AGENT_CX + AGENT_W / 2} ${y} C 220 ${y} 255 ${MQTT_Y} ${MQTT_LEFT} ${MQTT_Y}`;
 }
 function mqttEdge() {
   return `M ${MQTT_RIGHT} ${MQTT_Y} L ${HUB_LEFT} ${HUB_Y}`;
@@ -217,7 +219,11 @@ const outputs = [
   </div>
 </section>
 
-<style>
+<style is:global>
+  /* Selectors are scoped by the .arch-section ancestor.
+     `is:global` is required so styles also apply to SVG nodes that the
+     inline script recreates via createElementNS — those don't get the
+     per-component `data-astro-cid-*` attribute Astro adds during SSR. */
   .arch-section .edge {
     fill: none;
     stroke: var(--color-border);
@@ -251,7 +257,7 @@ const outputs = [
   }
 
   .arch-section .node-rect {
-    fill: var(--color-bg-secondary);
+    fill: var(--color-surface-hover);
     stroke: var(--color-border);
     stroke-width: 1.25;
     transition: stroke 220ms ease, stroke-width 220ms ease, fill 220ms ease;
@@ -264,7 +270,7 @@ const outputs = [
   /* Per-node accent tints */
   .arch-section .agent-rect { stroke: color-mix(in srgb, var(--color-accent) 40%, var(--color-border)); }
   .arch-section .mqtt-rect  { stroke: color-mix(in srgb, var(--color-warning) 50%, var(--color-border)); }
-  .arch-section .hub-rect   { fill: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg-secondary)); stroke: color-mix(in srgb, var(--color-accent) 55%, var(--color-border)); }
+  .arch-section .hub-rect   { fill: color-mix(in srgb, var(--color-accent) 10%, var(--color-surface-hover)); stroke: color-mix(in srgb, var(--color-accent) 55%, var(--color-border)); }
   .arch-section .output-rect{ stroke: color-mix(in srgb, var(--color-info) 45%, var(--color-border)); }
 
   .arch-section .node-label {
@@ -457,7 +463,7 @@ const outputs = [
 
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Layout constants (mirror the frontmatter)
+    // Layout constants (mirror the frontmatter values)
     var AGENT_CX = 110, AGENT_W = 150, AGENT_H = 52;
     var MQTT_LEFT = 290, MQTT_Y = 200;
     var HUB_LEFT = 500, HUB_RIGHT = 640, HUB_Y = 200;
@@ -476,7 +482,7 @@ const outputs = [
     }
     function agentEdgeD(y) {
       return 'M ' + (AGENT_CX + AGENT_W / 2) + ' ' + y +
-        ' C 235 ' + y + ' 235 ' + MQTT_Y + ' ' + MQTT_LEFT + ' ' + MQTT_Y;
+        ' C 220 ' + y + ' 255 ' + MQTT_Y + ' ' + MQTT_LEFT + ' ' + MQTT_Y;
     }
     function mqttEdgeD() {
       return 'M ' + MQTT_RIGHT + ' ' + MQTT_Y + ' L ' + HUB_LEFT + ' ' + HUB_Y;
