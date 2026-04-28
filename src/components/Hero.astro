@@ -70,7 +70,23 @@ import BrowserFrame from './BrowserFrame.astro';
     <!-- Dashboard preview -->
     <div class="mx-auto mt-10 max-w-5xl lg:mt-12">
       <BrowserFrame label="insightd — Dashboard">
-        <img src="/screenshots/Dashboard.png" alt="insightd dashboard showing health score, status bar, attention feed, and insights" class="w-full" loading="eager" />
+        <div class="hero-zoom relative">
+          <img
+            src="/screenshots/Dashboard.png"
+            alt="insightd dashboard showing health score, status bar, attention feed, and insights"
+            class="hero-zoom-img block w-full"
+            loading="eager"
+            decoding="async"
+          />
+          <div class="hero-zoom-lens" aria-hidden="true"></div>
+          <div class="hero-zoom-hint" aria-hidden="true">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7" />
+              <path stroke-linecap="round" d="m20 20-3.5-3.5" />
+            </svg>
+            <span>Hover to zoom</span>
+          </div>
+        </div>
       </BrowserFrame>
     </div>
   </div>
@@ -81,3 +97,99 @@ import BrowserFrame from './BrowserFrame.astro';
     <div class="absolute -bottom-20 -left-20 h-[400px] w-[400px] rounded-full bg-accent/3 blur-3xl"></div>
   </div>
 </section>
+
+<style>
+  .hero-zoom { cursor: zoom-in; }
+
+  .hero-zoom-lens {
+    position: absolute;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    width: 360px;
+    height: 360px;
+    border-radius: 9999px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.35),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.25),
+      0 12px 32px rgba(0, 0, 0, 0.35);
+    background-image: url('/screenshots/Dashboard.png');
+    background-repeat: no-repeat;
+    background-color: var(--color-surface);
+    opacity: 0;
+    transition: opacity 120ms ease;
+    will-change: transform, background-position;
+  }
+  .hero-zoom.is-zooming .hero-zoom-lens { opacity: 1; }
+  .hero-zoom.is-zooming { cursor: none; }
+
+  .hero-zoom-hint {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 9999px;
+    background: rgba(15, 23, 42, 0.7);
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 11px;
+    font-weight: 500;
+    backdrop-filter: blur(6px);
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+  .hero-zoom:hover .hero-zoom-hint {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .hero-zoom.is-zooming .hero-zoom-hint { opacity: 0; }
+
+  @media (hover: none) {
+    .hero-zoom { cursor: default; }
+    .hero-zoom-lens, .hero-zoom-hint { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-zoom-lens, .hero-zoom-hint { transition: none; }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    if (!window.matchMedia('(hover: hover)').matches) return;
+    var container = document.querySelector('.hero-zoom');
+    if (!container) return;
+    var img = container.querySelector('.hero-zoom-img');
+    var lens = container.querySelector('.hero-zoom-lens');
+    var lensSize = 360;
+    var zoom = 2.5;
+
+    function update(e) {
+      var rect = img.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      var y = e.clientY - rect.top;
+      if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+        container.classList.remove('is-zooming');
+        return;
+      }
+      container.classList.add('is-zooming');
+      var bgW = rect.width * zoom;
+      var bgH = rect.height * zoom;
+      lens.style.backgroundSize = bgW + 'px ' + bgH + 'px';
+      lens.style.backgroundPosition =
+        -(x * zoom - lensSize / 2) + 'px ' +
+        -(y * zoom - lensSize / 2) + 'px';
+      lens.style.transform =
+        'translate(' + (x - lensSize / 2) + 'px,' + (y - lensSize / 2) + 'px)';
+    }
+
+    container.addEventListener('mousemove', update);
+    container.addEventListener('mouseleave', function () {
+      container.classList.remove('is-zooming');
+    });
+  })();
+</script>

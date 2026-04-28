@@ -22,21 +22,8 @@
   --color-border-light: var(--border-light);
 }
 
-/* Dark mode (default) */
+/* Light mode (default) */
 :root {
-  --bg: #0b0f19;
-  --bg-secondary: #111827;
-  --surface: #1e293b;
-  --surface-hover: #273548;
-  --text: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --border: #334155;
-  --border-light: #1e293b;
-}
-
-/* Light mode */
-.light {
   --bg: #f8fafc;
   --bg-secondary: #f1f5f9;
   --surface: #ffffff;
@@ -46,6 +33,19 @@
   --text-muted: #94a3b8;
   --border: #e2e8f0;
   --border-light: #f1f5f9;
+}
+
+/* Dark mode */
+.dark {
+  --bg: #0b0f19;
+  --bg-secondary: #111827;
+  --surface: #1e293b;
+  --surface-hover: #273548;
+  --text: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border: #334155;
+  --border-light: #1e293b;
 }
 
 body {

@@ -38,10 +38,10 @@ const {
     <script is:inline>
       (function() {
         var stored = localStorage.getItem('theme');
-        if (stored === 'light') {
-          document.documentElement.classList.add('light');
-        } else if (!stored && window.matchMedia('(prefers-color-scheme: light)').matches) {
-          document.documentElement.classList.add('light');
+        if (stored === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else if (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add('dark');
         }
       })();
     </script>
@@ -53,12 +53,12 @@ const {
     <script is:inline>
       (function() {
         function updateIcons() {
-          var isLight = document.documentElement.classList.contains('light');
+          var isDark = document.documentElement.classList.contains('dark');
           document.querySelectorAll('.theme-icon-sun').forEach(function(el) {
-            el.classList.toggle('hidden', isLight);
+            el.classList.toggle('hidden', !isDark);
           });
           document.querySelectorAll('.theme-icon-moon').forEach(function(el) {
-            el.classList.toggle('hidden', !isLight);
+            el.classList.toggle('hidden', isDark);
           });
         }
 
@@ -66,13 +66,13 @@ const {
 
         document.querySelectorAll('.theme-toggle').forEach(function(btn) {
           btn.addEventListener('click', function() {
-            var isLight = document.documentElement.classList.contains('light');
-            if (isLight) {
-              document.documentElement.classList.remove('light');
-              localStorage.setItem('theme', 'dark');
-            } else {
-              document.documentElement.classList.add('light');
+            var isDark = document.documentElement.classList.contains('dark');
+            if (isDark) {
+              document.documentElement.classList.remove('dark');
               localStorage.setItem('theme', 'light');
+            } else {
+              document.documentElement.classList.add('dark');
+              localStorage.setItem('theme', 'dark');
             }
             updateIcons();
           });
