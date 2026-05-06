@@ -21,6 +21,10 @@ const faqs = [
     answer: 'Yes. Deploy the agent as a DaemonSet on k8s or k3s — one pod per node. Each pod reports its containers and node-level metrics. Host metrics come from the kubelet, not /proc, so they are accurate even inside a container.',
   },
   {
+    question: 'Does it support Proxmox VE?',
+    answer: 'Yes. Run an agent from any guest VM and point it at PVE\'s REST API with a token — no install on the hypervisor. LXC and QEMU guests appear as containers, alongside ZFS pool health, storage saturation, cluster quorum, and per-guest backup tracking. Multi-node clusters use one agent process per node.',
+  },
+  {
     question: 'What notification channels are supported?',
     answer: 'Slack, Discord, Telegram, ntfy, and generic webhooks. Plus HTML email alerts and weekly digest summaries.',
   },
