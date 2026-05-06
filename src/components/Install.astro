@@ -24,6 +24,18 @@ docker compose -f docker-compose.hub.yml up -d
 
 const k8sCmd = `kubectl apply -f https://raw.githubusercontent.com/goldenproductions/insightd/main/agent/k8s/rbac.yaml
 kubectl apply -f https://raw.githubusercontent.com/goldenproductions/insightd/main/agent/k8s/daemonset.yaml`;
+
+const pveCmd = `docker run -d --restart unless-stopped \\
+  --name insightd-agent-pve \\
+  -e INSIGHTD_RUNTIME=proxmox \\
+  -e INSIGHTD_HOST_ID=pve-01 \\
+  -e INSIGHTD_MQTT_URL=mqtt://your-broker.lan:1883 \\
+  -e INSIGHTD_PVE_API_URL=https://pve-01.lan:8006 \\
+  -e INSIGHTD_PVE_TOKEN_ID='insightd@pve!agent01' \\
+  -e INSIGHTD_PVE_TOKEN_SECRET=YOUR-TOKEN-SECRET \\
+  -e INSIGHTD_PVE_NODE=pve-01 \\
+  -e INSIGHTD_ALLOW_ACTIONS=true \\
+  andreas404/insightd-agent:latest`;
 ---
 
 <section id="install" class="py-16 sm:py-20 lg:py-20">
@@ -54,6 +66,15 @@ kubectl apply -f https://raw.githubusercontent.com/goldenproductions/insightd/ma
         >
           Kubernetes
         </button>
+        <button
+          role="tab"
+          aria-selected="false"
+          aria-controls="tab-pve"
+          class="install-tab border-b-2 border-transparent px-4 py-2.5 text-sm font-medium text-muted hover:text-secondary"
+          data-tab="pve"
+        >
+          Proxmox VE
+        </button>
       </div>
 
       <div class="mt-6">
@@ -80,6 +101,13 @@ kubectl apply -f https://raw.githubusercontent.com/goldenproductions/insightd/ma
           <CommandBlock code={k8sCmd} />
           <p class="mt-4 text-sm text-muted">
             The agent runs as a DaemonSet — one pod per node — reporting to the same hub and Mosquitto broker as your Docker hosts. Edit the manifest to set your MQTT URL first.
+          </p>
+        </div>
+
+        <div id="tab-pve" class="install-panel hidden" role="tabpanel">
+          <CommandBlock code={pveCmd} />
+          <p class="mt-4 text-sm text-muted">
+            Runs from any guest VM — no install on the hypervisor. Authenticates with a PVE API token. The <a href="https://docs.insightd.org/guides/proxmox/" class="text-accent hover:text-accent-dark" target="_blank" rel="noopener noreferrer">Proxmox VE guide</a> walks through token creation (one <code class="rounded bg-surface px-1 py-0.5 text-xs text-secondary">pveum</code> command) and ACL setup.
           </p>
         </div>
       </div>

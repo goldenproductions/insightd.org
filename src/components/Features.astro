@@ -4,13 +4,18 @@ import FeatureCard from './FeatureCard.astro';
 const features = [
   {
     title: 'Multi-Runtime Monitoring',
-    description: 'Docker, Kubernetes, and k3s reporting to the same hub. One agent container per Docker host, or a DaemonSet on your cluster.',
+    description: 'Docker, Kubernetes / k3s, and Proxmox VE reporting to the same hub. One agent per Docker host, a DaemonSet on your cluster, or a REST-mode agent for the hypervisor.',
     icon: '<svg class="h-5 w-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z" /></svg>',
   },
   {
     title: 'Kubernetes-Aware',
     description: 'Cluster events, node conditions as alerts, container resource-limit saturation alerts, PV/PVC inventory, and Ingress auto-discovery into the HTTP endpoint monitor. One DaemonSet, full visibility.',
     icon: '<svg class="h-5 w-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L21.75 12l-4.179 2.25m0 0l4.179 2.25L12 21.75 2.25 16.5l4.179-2.25m11.142 0l-5.571 3-5.571-3" /></svg>',
+  },
+  {
+    title: 'Proxmox VE Hypervisor',
+    description: 'Talk to PVE over its REST API from a guest VM — no install on the hypervisor. LXC and QEMU guests appear as containers; ZFS health, storage saturation, cluster quorum, and per-guest backup overdue all become first-class alerts.',
+    icon: '<svg class="h-5 w-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m-1.5 0a3 3 0 00-3-3h-9a3 3 0 00-3 3m15 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0l-7.5-4.615A2.25 2.25 0 013 11.493V11.25" /></svg>',
   },
   {
     title: 'HTTP Endpoint Monitoring',
