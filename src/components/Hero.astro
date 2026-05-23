@@ -10,8 +10,9 @@ import BrowserFrame from './BrowserFrame.astro';
         <span class="text-accent">without the overhead</span>
       </h1>
       <p class="mx-auto mt-5 max-w-2xl text-lg text-secondary sm:text-xl lg:max-w-3xl lg:text-xl">
-        Self-hosted monitoring for Docker, Kubernetes, Proxmox VE, and HTTP
-        endpoints across multiple servers. Smart insights, not noisy dashboards.
+        Self-hosted monitoring for Docker, Kubernetes, and Proxmox VE — that
+        tells you <strong class="text-fg font-medium">why</strong> something broke,
+        not just <em>what</em>. Smart insights, calm alerts, runs on your hardware.
       </p>
 
       <!-- CTAs -->
@@ -65,6 +66,21 @@ import BrowserFrame from './BrowserFrame.astro';
           No telemetry
         </span>
       </div>
+    </div>
+
+    <!-- First-user feedback CTA -->
+    <div class="mx-auto mt-8 max-w-2xl">
+      <a
+        href="https://github.com/goldenproductions/insightd/discussions/286"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group block rounded-lg border border-accent/30 bg-accent/5 px-4 py-3 text-sm text-secondary transition-colors hover:border-accent/60 hover:bg-accent/10"
+      >
+        <span class="font-medium text-fg">First-time user?</span>
+        I'm actively collecting feedback — tell me if install worked first try,
+        what environment you used, and what was confusing.
+        <span class="whitespace-nowrap text-accent group-hover:underline">Join the discussion →</span>
+      </a>
     </div>
 
     <!-- Dashboard preview — reuses the .screenshot-tile lightbox wired up in Screenshots.astro. -->

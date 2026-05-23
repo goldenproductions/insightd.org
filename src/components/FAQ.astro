@@ -34,7 +34,31 @@ const faqs = [
   },
   {
     question: 'Is there a demo?',
-    answer: 'Not yet — insightd is designed to run on your own hardware. The setup wizard gets you running in under 5 minutes.',
+    answer: 'Demo video and screenshots are being prepared. For now, you can install insightd locally — the setup wizard gets you running in under 5 minutes. It is designed to run on your own hardware, so there is no hosted instance to log into.',
+  },
+  {
+    question: 'Is it a hosted SaaS?',
+    answer: 'No. insightd runs entirely on your hardware. There is no hosted version, no account to sign up for, and no data leaves your network. If you want a managed service, this is not it.',
+  },
+  {
+    question: 'Is it a Grafana / Prometheus replacement?',
+    answer: 'No. insightd is not a time-series database and has no PromQL or custom dashboards. It stores SQLite snapshots with 30-day raw retention and 365-day hourly rollups — enough for incident triage and weekly trends, not for high-cardinality long-term metrics. If you already run Prometheus and love it, keep it.',
+  },
+  {
+    question: 'Is it a log aggregator like Loki or ELK?',
+    answer: 'No. insightd ingests recent container logs for diagnosis and pattern matching (e.g. "ffmpeg fatal" → linked to a restart-spam alert), but it is not a centralized log search platform. There is no cross-host log query language and no long-term log retention.',
+  },
+  {
+    question: 'Does it support multi-tenancy or per-user roles?',
+    answer: 'No. v0.1 is single-admin: one password, no RBAC, no orgs or teams. It is designed for one trusted operator per hub. If you need fine-grained access control, this is not the right tool yet.',
+  },
+  {
+    question: 'What runtimes are not supported?',
+    answer: 'Docker, Kubernetes/k3s, and Proxmox VE are first-class today. Bare-metal/systemd services, FreeBSD jails, LXD, Podman rootless, and Nomad are not supported in v0.1. Open an issue if your stack matters to you.',
+  },
+  {
+    question: 'Is it safe to expose to the internet?',
+    answer: 'Expose the hub UI behind a reverse proxy with TLS and a strong admin password — that part is designed for it. Do not expose the MQTT broker (port 1883) to the public internet; keep it on a LAN, VPN, or Tailscale tailnet. Agent-to-hub authentication is username/password over MQTT, not mTLS.',
   },
 ];
 ---
