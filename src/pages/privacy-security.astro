@@ -1,0 +1,158 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const title = 'Privacy and security model — insightd';
+const description = 'How insightd handles self-hosted data, local SQLite storage, MQTT, Docker, Kubernetes, Proxmox, webhooks, and optional AI diagnosis.';
+---
+
+<Base title={title} description={description}>
+  <Header />
+  <main class="pt-28 sm:pt-32">
+    <section class="mx-auto max-w-4xl px-4 pb-16 sm:px-6 sm:pb-20">
+      <div class="text-center">
+        <p class="text-sm font-medium uppercase tracking-wide text-accent">Trust model</p>
+        <h1 class="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl">
+          Privacy and security model
+        </h1>
+        <p class="mx-auto mt-5 max-w-2xl text-lg leading-8 text-secondary">
+          insightd is designed for self-hosted homelabs. It runs on your hardware,
+          stores monitoring data locally, and only talks to integrations you configure.
+        </p>
+      </div>
+
+      <div class="mt-10 rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
+        <h2 class="text-xl font-semibold text-fg">Short version</h2>
+        <ul class="mt-4 space-y-3 text-sm leading-6 text-secondary">
+          <li>• No hosted insightd cloud service is required for normal operation.</li>
+          <li>• Monitoring data is stored locally by the hub in SQLite.</li>
+          <li>• The hub, agent, and Mosquitto broker are intended to run on your LAN or VPN.</li>
+          <li>• Do not expose MQTT directly to the public internet.</li>
+          <li>• No telemetry is required for insightd to operate.</li>
+          <li>• Email, webhooks, and optional AI diagnosis only run when you configure them.</li>
+        </ul>
+      </div>
+
+      <div class="prose-like mt-10 space-y-10">
+        <section>
+          <h2>What data is collected</h2>
+          <p>
+            Depending on what you enable, insightd can collect host metrics, container
+            and pod status, Proxmox guest status, HTTP endpoint checks, recent logs used
+            for diagnosis, restart history, health-check output, alerts, and insight feedback.
+            This can reveal hostnames, internal URLs, service names, and operational patterns,
+            so treat the hub database and backups as sensitive operational data.
+          </p>
+        </section>
+
+        <section>
+          <h2>Local storage</h2>
+          <p>
+            The hub uses SQLite for local persistence. Keep the database and backups private.
+            If you copy the database for debugging or support, redact hostnames, URLs, logs,
+            tokens, webhook URLs, and credentials first.
+          </p>
+        </section>
+
+        <section>
+          <h2>Network model</h2>
+          <p>
+            In a multi-host setup, agents publish to MQTT, the hub subscribes and stores data,
+            and the web UI, email, and webhooks are served from the hub. Keep the hub UI behind
+            your LAN, VPN, reverse proxy authentication, or another access-control layer that
+            fits your environment. Keep Mosquitto/MQTT private to your LAN or VPN.
+          </p>
+        </section>
+
+        <section>
+          <h2>Docker permissions</h2>
+          <p>
+            Docker monitoring usually requires access to the Docker socket. The Docker socket is
+            highly privileged: software with write-capable Docker socket access can often control
+            containers and may effectively gain root-equivalent power on the host. Keep container
+            actions and remote updates disabled unless you deliberately want those capabilities.
+          </p>
+        </section>
+
+        <section>
+          <h2>Kubernetes and Proxmox permissions</h2>
+          <p>
+            For Kubernetes, review the RBAC manifest before applying it and keep permissions
+            read-only unless a future feature explicitly requires otherwise. For Proxmox VE,
+            prefer a dedicated API token with only the permissions needed for monitoring the
+            nodes and guests you want insightd to see.
+          </p>
+        </section>
+
+        <section>
+          <h2>Email, webhooks, and optional AI diagnosis</h2>
+          <p>
+            Email digests and webhook alerts are optional. Treat webhook URLs and SMTP credentials
+            as secrets. The optional “Diagnose with AI” feature requires a configured Gemini API key
+            and is not required for the built-in diagnosis engine. If you enable it, assume relevant
+            diagnosis context may be sent to the configured AI provider.
+          </p>
+        </section>
+
+        <section>
+          <h2>Install script auditability</h2>
+          <p>
+            The quick install command downloads and runs a shell script. If you prefer to audit it
+            before running it, inspect the script first:
+          </p>
+          <pre><code>curl -fsSL https://insightd.org/install.sh</code></pre>
+        </section>
+
+        <section>
+          <h2>Reporting vulnerabilities</h2>
+          <p>
+            Please do not open public GitHub issues for security vulnerabilities. Use GitHub private
+            vulnerability reporting from the repository security tab.
+          </p>
+          <p>
+            <a href="https://github.com/goldenproductions/insightd/security" target="_blank" rel="noopener noreferrer">
+              Open GitHub security page →
+            </a>
+          </p>
+        </section>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  .prose-like h2 {
+    margin-bottom: 0.75rem;
+    color: var(--color-fg);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  .prose-like p {
+    color: var(--color-secondary);
+    font-size: 0.95rem;
+    line-height: 1.8;
+  }
+
+  .prose-like a {
+    color: var(--color-accent);
+    font-weight: 500;
+  }
+
+  .prose-like a:hover {
+    text-decoration: underline;
+  }
+
+  .prose-like pre {
+    margin-top: 1rem;
+    overflow-x: auto;
+    border-radius: 0.75rem;
+    background: #0f172a;
+    padding: 1rem;
+    color: #dbeafe;
+    font-size: 0.875rem;
+  }
+</style>
