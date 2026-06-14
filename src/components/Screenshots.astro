@@ -2,12 +2,42 @@
 import BrowserFrame from './BrowserFrame.astro';
 
 const screenshots = [
-  { label: 'Hosts', src: '/screenshots/Host_page.png', alt: 'Hosts overview showing all connected servers with online status, runtime, container counts, and health score' },
-  { label: 'Host Detail', src: '/screenshots/Host_detail_page.png', alt: 'Host detail page showing CPU, memory, load, and network charts over 24 hours' },
-  { label: 'Container Detail', src: '/screenshots/container_detail_page.png', alt: 'Container detail page showing diagnosis with evidence, related services, charts, and live metrics' },
-  { label: 'Alerts', src: '/screenshots/Alert_page.png', alt: 'Alerts page with Explore-style facet rail filtering by host, namespace, level, and status' },
-  { label: 'Endpoints', src: '/screenshots/Endpoint_page.png', alt: 'HTTP endpoints page with uptime, response time, sparklines, and discovered Kubernetes ingresses' },
-  { label: 'Storage', src: '/screenshots/Storage_page.png', alt: 'Fleet storage overview with disk usage forecasts, Docker volumes, and Kubernetes persistent volumes' },
+  {
+    label: 'Hosts',
+    src: '/screenshots/Host_page.png',
+    alt: 'Hosts overview showing all connected servers with online status, runtime, container counts, and health score',
+    caption: 'Start with the fleet view: which machines are online, which runtime they use, and what needs attention first.',
+  },
+  {
+    label: 'Host Detail',
+    src: '/screenshots/Host_detail_page.png',
+    alt: 'Host detail page showing CPU, memory, load, and network charts over 24 hours',
+    caption: 'Drill into a host to see resource trends and recent pressure without building a custom Grafana dashboard.',
+  },
+  {
+    label: 'Container Detail',
+    src: '/screenshots/container_detail_page.png',
+    alt: 'Container detail page showing diagnosis with evidence, related services, charts, and live metrics',
+    caption: 'When a container is unhealthy, insightd shows the likely cause, the evidence, and the related services to check next.',
+  },
+  {
+    label: 'Alerts',
+    src: '/screenshots/Alert_page.png',
+    alt: 'Alerts page with Explore-style facet rail filtering by host, namespace, level, and status',
+    caption: 'Alerts are organized for triage: filter by host, namespace, severity, or status instead of scrolling through noise.',
+  },
+  {
+    label: 'Endpoints',
+    src: '/screenshots/Endpoint_page.png',
+    alt: 'HTTP endpoints page with uptime, response time, sparklines, and discovered Kubernetes ingresses',
+    caption: 'Track HTTP checks alongside your infrastructure, including response-time trends and Kubernetes ingress discovery.',
+  },
+  {
+    label: 'Storage',
+    src: '/screenshots/Storage_page.png',
+    alt: 'Fleet storage overview with disk usage forecasts, Docker volumes, and Kubernetes persistent volumes',
+    caption: 'See disks, Docker volumes, and Kubernetes persistent volumes in one place, with forecasts before storage becomes urgent.',
+  },
 ];
 ---
 
@@ -20,18 +50,24 @@ const screenshots = [
 
     <div class="mt-10 grid gap-6 sm:grid-cols-2">
       {screenshots.map(shot => (
-        <button
-          type="button"
-          class="screenshot-tile group block w-full cursor-zoom-in rounded-xl text-left transition-transform duration-200 hover:scale-[1.015] hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg"
-          data-src={shot.src}
-          data-alt={shot.alt}
-          data-label={`insightd — ${shot.label}`}
-          aria-label={`Zoom in: ${shot.label}`}
-        >
-          <BrowserFrame label={`insightd — ${shot.label}`}>
-            <img src={shot.src} alt={shot.alt} class="block w-full" loading="lazy" />
-          </BrowserFrame>
-        </button>
+        <div class="group rounded-xl border border-border bg-surface/60 p-3 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-xl">
+          <button
+            type="button"
+            class="screenshot-tile block w-full cursor-zoom-in rounded-lg text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-bg"
+            data-src={shot.src}
+            data-alt={shot.alt}
+            data-label={`insightd — ${shot.label}`}
+            aria-label={`Zoom in: ${shot.label}`}
+          >
+            <BrowserFrame label={`insightd — ${shot.label}`}>
+              <img src={shot.src} alt={shot.alt} class="block w-full" loading="lazy" />
+            </BrowserFrame>
+          </button>
+          <div class="px-1 pt-3">
+            <h3 class="text-sm font-semibold text-fg">{shot.label}</h3>
+            <p class="mt-1 text-sm leading-6 text-secondary">{shot.caption}</p>
+          </div>
+        </div>
       ))}
     </div>
   </div>
