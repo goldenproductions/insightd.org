@@ -59,6 +59,8 @@ const faqs = [
   {
     question: 'Is it safe to expose to the internet?',
     answer: 'Expose the hub UI behind a reverse proxy with TLS and a strong admin password — that part is designed for it. Do not expose the MQTT broker (port 1883) to the public internet; keep it on a LAN, VPN, or Tailscale tailnet. Agent-to-hub authentication is username/password over MQTT, not mTLS.',
+    linkHref: '/privacy-security/',
+    linkText: 'Read the privacy and security model',
   },
 ];
 ---
@@ -80,6 +82,11 @@ const faqs = [
           </summary>
           <div class="border-t border-border px-5 py-4">
             <p class="text-sm text-muted leading-relaxed">{faq.answer}</p>
+            {faq.linkHref && faq.linkText && (
+              <a href={faq.linkHref} class="mt-3 inline-flex text-sm font-medium text-accent hover:underline">
+                {faq.linkText} →
+              </a>
+            )}
           </div>
         </details>
       ))}
