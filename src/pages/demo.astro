@@ -1,0 +1,493 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const title = 'Interactive demo — insightd';
+const description = 'Click through a static insightd demo with realistic homelab mock data before installing the self-hosted hub.';
+---
+
+<Base title={title} description={description}>
+  <Header />
+  <main class="pt-24">
+    <section class="relative overflow-hidden border-b border-border bg-bg-secondary py-14 sm:py-16">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <div class="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div>
+            <p class="text-sm font-medium uppercase tracking-wide text-accent">Interactive demo</p>
+            <h1 class="mt-3 text-4xl font-bold tracking-tight text-fg sm:text-5xl">
+              Try insightd before you install it.
+            </h1>
+            <p class="mt-5 max-w-2xl text-lg leading-8 text-secondary">
+              Explore a sample homelab with Docker, k3s, Proxmox, endpoints,
+              alerts, logs, and diagnosis evidence. No account, no backend, no telemetry —
+              just realistic mock data so you can feel the product first.
+            </p>
+            <div class="mt-7 flex flex-col gap-3 sm:flex-row">
+              <a href="#demo-app" class="inline-flex items-center justify-center rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-dark">
+                Open the demo
+                <svg class="ml-2 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </a>
+              <a href="https://docs.insightd.org/guides/quick-start/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center rounded-lg border border-border px-5 py-2.5 text-sm font-medium text-secondary transition-colors hover:border-fg/20 hover:text-fg">
+                Install on your homelab
+              </a>
+            </div>
+            <div class="mt-5 rounded-xl border border-warning/30 bg-warning/10 p-4 text-sm leading-6 text-secondary">
+              <strong class="text-fg">Sample data only.</strong> The real insightd runs on your
+              hardware and stores monitoring data locally. This public demo is static and
+              deliberately disconnected from any real system.
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-border bg-surface p-4 shadow-xl shadow-slate-900/5 dark:shadow-black/20">
+            <div class="flex items-center gap-2 border-b border-border pb-3">
+              <span class="h-3 w-3 rounded-full bg-danger"></span>
+              <span class="h-3 w-3 rounded-full bg-warning"></span>
+              <span class="h-3 w-3 rounded-full bg-success"></span>
+              <span class="ml-2 text-xs text-muted">demo.insightd.local</span>
+            </div>
+            <div class="mt-4 grid gap-3 sm:grid-cols-3">
+              <div class="rounded-xl border border-border bg-bg p-4">
+                <p class="text-xs uppercase tracking-wide text-muted">Health</p>
+                <p class="mt-2 text-3xl font-bold text-warning">82</p>
+                <p class="mt-1 text-xs text-muted">Needs attention</p>
+              </div>
+              <div class="rounded-xl border border-border bg-bg p-4">
+                <p class="text-xs uppercase tracking-wide text-muted">Assets</p>
+                <p class="mt-2 text-3xl font-bold text-fg">43</p>
+                <p class="mt-1 text-xs text-muted">hosts, containers, endpoints</p>
+              </div>
+              <div class="rounded-xl border border-border bg-bg p-4">
+                <p class="text-xs uppercase tracking-wide text-muted">Open alerts</p>
+                <p class="mt-2 text-3xl font-bold text-danger">3</p>
+                <p class="mt-1 text-xs text-muted">1 critical, 2 warning</p>
+              </div>
+            </div>
+            <div class="mt-4 rounded-xl border border-border bg-bg p-4">
+              <p class="text-sm font-medium text-fg">Current top insight</p>
+              <p class="mt-2 text-sm leading-6 text-secondary">
+                <span class="rounded-full bg-danger/10 px-2 py-0.5 text-xs font-medium text-danger">critical</span>
+                Jellyfin is restart-spamming after ffmpeg exits with SIGKILL. Memory pressure
+                on <strong class="text-fg">media-node</strong> is the most likely cause.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="pointer-events-none absolute -right-32 -top-32 -z-10 h-96 w-96 rounded-full bg-accent/10 blur-3xl"></div>
+    </section>
+
+    <section id="demo-app" class="py-12 sm:py-16">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6">
+        <div class="mb-6 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
+          <div>
+            <p class="text-sm font-medium uppercase tracking-wide text-accent">Sample workspace</p>
+            <h2 class="mt-2 text-2xl font-bold text-fg sm:text-3xl">Golden Homelab</h2>
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-secondary">
+              Click the sections below to see how insightd moves from “what is broken?” to
+              “why did it happen, what evidence supports it, and what should I try next?”
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2 text-xs text-muted">
+            <span class="rounded-full border border-border bg-surface px-3 py-1">Docker</span>
+            <span class="rounded-full border border-border bg-surface px-3 py-1">k3s</span>
+            <span class="rounded-full border border-border bg-surface px-3 py-1">Proxmox VE</span>
+            <span class="rounded-full border border-border bg-surface px-3 py-1">HTTP endpoints</span>
+          </div>
+        </div>
+
+        <div class="overflow-hidden rounded-2xl border border-border bg-surface shadow-xl shadow-slate-900/5 dark:shadow-black/20">
+          <div class="flex flex-col border-b border-border bg-bg-secondary lg:flex-row">
+            <aside class="border-b border-border p-3 lg:w-64 lg:border-b-0 lg:border-r">
+              <div class="mb-3 flex items-center gap-3 rounded-xl bg-surface p-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-sm font-bold text-white">i</div>
+                <div>
+                  <p class="text-sm font-semibold text-fg">insightd demo</p>
+                  <p class="text-xs text-muted">mock-data snapshot</p>
+                </div>
+              </div>
+              <nav class="grid grid-cols-2 gap-2 lg:grid-cols-1" aria-label="Demo sections">
+                <button type="button" class="demo-tab is-active" data-demo-view="overview">Overview</button>
+                <button type="button" class="demo-tab" data-demo-view="hosts">Hosts</button>
+                <button type="button" class="demo-tab" data-demo-view="containers">Containers</button>
+                <button type="button" class="demo-tab" data-demo-view="endpoints">Endpoints</button>
+                <button type="button" class="demo-tab" data-demo-view="alerts">Alerts</button>
+                <button type="button" class="demo-tab" data-demo-view="diagnosis">Diagnosis</button>
+              </nav>
+            </aside>
+
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-col gap-3 border-b border-border p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p class="text-sm font-semibold text-fg" data-demo-title>Overview</p>
+                  <p class="text-xs text-muted">Last updated 24 seconds ago · agent heartbeat normal</p>
+                </div>
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="rounded-full bg-success/10 px-2.5 py-1 font-medium text-success">5 healthy</span>
+                  <span class="rounded-full bg-warning/10 px-2.5 py-1 font-medium text-warning">2 warning</span>
+                  <span class="rounded-full bg-danger/10 px-2.5 py-1 font-medium text-danger">1 critical</span>
+                </div>
+              </div>
+
+              <div class="p-4 sm:p-6">
+                <section class="demo-panel" data-demo-panel="overview">
+                  <div class="grid gap-4 md:grid-cols-4">
+                    <article class="metric-card">
+                      <span class="metric-label">Fleet health</span>
+                      <strong class="text-warning">82%</strong>
+                      <span class="metric-note">media-node pulling score down</span>
+                    </article>
+                    <article class="metric-card">
+                      <span class="metric-label">CPU load</span>
+                      <strong>37%</strong>
+                      <span class="metric-note">cluster average</span>
+                    </article>
+                    <article class="metric-card">
+                      <span class="metric-label">Memory</span>
+                      <strong class="text-warning">76%</strong>
+                      <span class="metric-note">media-node at 91%</span>
+                    </article>
+                    <article class="metric-card">
+                      <span class="metric-label">Alerts routed</span>
+                      <strong>Slack + ntfy</strong>
+                      <span class="metric-note">last delivery 2m ago</span>
+                    </article>
+                  </div>
+
+                  <div class="mt-5 grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+                    <article class="rounded-xl border border-border bg-bg p-5">
+                      <div class="flex items-center justify-between gap-4">
+                        <h3 class="font-semibold text-fg">Attention feed</h3>
+                        <button type="button" class="text-sm font-medium text-accent hover:underline" data-demo-jump="diagnosis">Open diagnosis →</button>
+                      </div>
+                      <div class="mt-4 space-y-3">
+                        <div class="feed-item border-danger/30 bg-danger/5">
+                          <span class="status-dot bg-danger"></span>
+                          <div>
+                            <p class="text-sm font-medium text-fg">Jellyfin restart loop</p>
+                            <p class="text-xs leading-5 text-muted">8 restarts in 12 minutes · ffmpeg fatal · likely memory pressure</p>
+                          </div>
+                        </div>
+                        <div class="feed-item border-warning/30 bg-warning/5">
+                          <span class="status-dot bg-warning"></span>
+                          <div>
+                            <p class="text-sm font-medium text-fg">ZFS pool scrub overdue</p>
+                            <p class="text-xs leading-5 text-muted">tank has not scrubbed in 42 days · Proxmox token read-only</p>
+                          </div>
+                        </div>
+                        <div class="feed-item border-info/30 bg-info/5">
+                          <span class="status-dot bg-info"></span>
+                          <div>
+                            <p class="text-sm font-medium text-fg">API latency baseline shifted</p>
+                            <p class="text-xs leading-5 text-muted">p95 is 340ms vs 180ms normal · correlated with backup window</p>
+                          </div>
+                        </div>
+                      </div>
+                    </article>
+
+                    <article class="rounded-xl border border-border bg-bg p-5">
+                      <h3 class="font-semibold text-fg">What insightd is doing</h3>
+                      <ol class="mt-4 space-y-3 text-sm text-secondary">
+                        <li><span class="step-dot">1</span> Collect host/container snapshots from agents</li>
+                        <li><span class="step-dot">2</span> Compare metrics to robust baselines</li>
+                        <li><span class="step-dot">3</span> Mine recent logs for repeated failure patterns</li>
+                        <li><span class="step-dot">4</span> Rank likely causes and route calm alerts</li>
+                      </ol>
+                    </article>
+                  </div>
+                </section>
+
+                <section class="demo-panel hidden" data-demo-panel="hosts">
+                  <div class="grid gap-4 lg:grid-cols-3">
+                    <article class="asset-card border-danger/30">
+                      <div class="asset-head"><strong>media-node</strong><span class="badge-danger">critical</span></div>
+                      <p class="asset-subtitle">Docker host · Ryzen 5700G · 32 GB RAM</p>
+                      <div class="bar-row"><span>CPU</span><div class="bar"><i style="width: 68%"></i></div><span>68%</span></div>
+                      <div class="bar-row"><span>RAM</span><div class="bar"><i class="warn" style="width: 91%"></i></div><span>91%</span></div>
+                      <p class="mt-3 text-xs text-muted">Jellyfin, Immich, Frigate, Redis, Postgres</p>
+                    </article>
+                    <article class="asset-card">
+                      <div class="asset-head"><strong>kingduck-pve</strong><span class="badge-warning">warning</span></div>
+                      <p class="asset-subtitle">Proxmox VE · 6 guests · ZFS mirror</p>
+                      <div class="bar-row"><span>CPU</span><div class="bar"><i style="width: 41%"></i></div><span>41%</span></div>
+                      <div class="bar-row"><span>RAM</span><div class="bar"><i style="width: 62%"></i></div><span>62%</span></div>
+                      <p class="mt-3 text-xs text-muted">Scrub overdue, backups otherwise healthy</p>
+                    </article>
+                    <article class="asset-card">
+                      <div class="asset-head"><strong>k3s-edge-01</strong><span class="badge-success">healthy</span></div>
+                      <p class="asset-subtitle">k3s worker · 24 pods · 3 namespaces</p>
+                      <div class="bar-row"><span>CPU</span><div class="bar"><i style="width: 28%"></i></div><span>28%</span></div>
+                      <div class="bar-row"><span>RAM</span><div class="bar"><i style="width: 54%"></i></div><span>54%</span></div>
+                      <p class="mt-3 text-xs text-muted">DaemonSet agent reporting every 30s</p>
+                    </article>
+                  </div>
+                </section>
+
+                <section class="demo-panel hidden" data-demo-panel="containers">
+                  <div class="overflow-hidden rounded-xl border border-border">
+                    <table class="w-full text-left text-sm">
+                      <thead class="bg-bg-secondary text-xs uppercase tracking-wide text-muted">
+                        <tr><th class="px-4 py-3">Container</th><th class="px-4 py-3">Host</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Signal</th></tr>
+                      </thead>
+                      <tbody class="divide-y divide-border">
+                        <tr><td class="px-4 py-3 font-medium text-fg">jellyfin</td><td class="px-4 py-3 text-muted">media-node</td><td class="px-4 py-3"><span class="badge-danger">restarting</span></td><td class="px-4 py-3 text-muted">8 restarts · ffmpeg SIGKILL</td></tr>
+                        <tr><td class="px-4 py-3 font-medium text-fg">immich-server</td><td class="px-4 py-3 text-muted">media-node</td><td class="px-4 py-3"><span class="badge-warning">degraded</span></td><td class="px-4 py-3 text-muted">queue depth 1,284</td></tr>
+                        <tr><td class="px-4 py-3 font-medium text-fg">home-assistant</td><td class="px-4 py-3 text-muted">kingduck-pve</td><td class="px-4 py-3"><span class="badge-success">healthy</span></td><td class="px-4 py-3 text-muted">latency normal</td></tr>
+                        <tr><td class="px-4 py-3 font-medium text-fg">ingress-nginx</td><td class="px-4 py-3 text-muted">k3s-edge-01</td><td class="px-4 py-3"><span class="badge-success">healthy</span></td><td class="px-4 py-3 text-muted">24h uptime</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+
+                <section class="demo-panel hidden" data-demo-panel="endpoints">
+                  <div class="grid gap-4 md:grid-cols-2">
+                    <article class="asset-card">
+                      <div class="asset-head"><strong>https://home.example.net</strong><span class="badge-success">up</span></div>
+                      <p class="asset-subtitle">p95 112ms · TLS expires in 61 days</p>
+                    </article>
+                    <article class="asset-card border-warning/30">
+                      <div class="asset-head"><strong>https://media.example.net</strong><span class="badge-warning">slow</span></div>
+                      <p class="asset-subtitle">p95 1.8s · 5xx spike overlaps Jellyfin restarts</p>
+                    </article>
+                    <article class="asset-card">
+                      <div class="asset-head"><strong>https://docs.example.net</strong><span class="badge-success">up</span></div>
+                      <p class="asset-subtitle">p95 94ms · content hash stable</p>
+                    </article>
+                    <article class="asset-card">
+                      <div class="asset-head"><strong>ntfy alert route</strong><span class="badge-success">delivered</span></div>
+                      <p class="asset-subtitle">last notification acknowledged 2 minutes ago</p>
+                    </article>
+                  </div>
+                </section>
+
+                <section class="demo-panel hidden" data-demo-panel="alerts">
+                  <div class="space-y-3">
+                    <article class="alert-card border-danger/30 bg-danger/5">
+                      <div><strong class="text-fg">Critical: Jellyfin restart loop</strong><p class="text-sm text-muted">Sent to Slack #homelab and ntfy “ops” · deduped for 30 minutes</p></div>
+                      <span class="badge-danger">open</span>
+                    </article>
+                    <article class="alert-card border-warning/30 bg-warning/5">
+                      <div><strong class="text-fg">Warning: ZFS scrub overdue</strong><p class="text-sm text-muted">Weekly digest will include maintenance reminder</p></div>
+                      <span class="badge-warning">open</span>
+                    </article>
+                    <article class="alert-card">
+                      <div><strong class="text-fg">Info: API latency recovered</strong><p class="text-sm text-muted">Suppressed because it matched a known backup window</p></div>
+                      <span class="badge-success">resolved</span>
+                    </article>
+                  </div>
+                </section>
+
+                <section class="demo-panel hidden" data-demo-panel="diagnosis">
+                  <div class="grid gap-5 lg:grid-cols-[0.9fr_1.1fr]">
+                    <article class="rounded-xl border border-border bg-bg p-5">
+                      <div class="flex items-center justify-between gap-3">
+                        <h3 class="font-semibold text-fg">Likely cause</h3>
+                        <span class="badge-danger">88% confidence</span>
+                      </div>
+                      <p class="mt-3 text-sm leading-6 text-secondary">
+                        Jellyfin restarts are most likely caused by memory pressure on
+                        <strong class="text-fg"> media-node</strong>. Container OOM hints,
+                        ffmpeg fatal logs, and host RAM saturation all started within the same window.
+                      </p>
+                      <div class="mt-4 rounded-lg border border-border bg-surface p-4">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-muted">Suggested next action</p>
+                        <p class="mt-2 text-sm text-secondary">Limit Jellyfin transcode memory, move Frigate inference off the host during peak media scans, or add swap as a short-term guardrail.</p>
+                      </div>
+                    </article>
+                    <article class="rounded-xl border border-border bg-slate-950 p-5 text-slate-200" data-no-transition>
+                      <div class="mb-3 flex items-center justify-between text-xs text-slate-400">
+                        <span>recent log pattern</span><span>jellyfin · media-node</span>
+                      </div>
+                      <pre class="overflow-x-auto text-xs leading-6"><code>[20:41:12] ffmpeg exited with signal: Killed
+[20:41:14] transcode worker failed after 00:00:08
+[20:41:15] container restart policy triggered
+[20:43:02] host memory available: 812 MiB
+[20:43:06] detector: restart-spam + memory-pressure matched</code></pre>
+                    </article>
+                  </div>
+                  <div class="mt-5 grid gap-3 md:grid-cols-3">
+                    <div class="evidence-card"><strong>Metric evidence</strong><span>RAM MAD z-score +4.7 vs baseline</span></div>
+                    <div class="evidence-card"><strong>Restart evidence</strong><span>8 restarts in 12 minutes</span></div>
+                    <div class="evidence-card"><strong>Topology evidence</strong><span>Jellyfin depends on media-node GPU/transcode path</span></div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-8 grid gap-4 rounded-2xl border border-border bg-bg-secondary p-5 md:grid-cols-[1fr_auto] md:items-center">
+          <div>
+            <h3 class="font-semibold text-fg">What should this demo make clearer?</h3>
+            <p class="mt-1 text-sm leading-6 text-secondary">
+              I am looking for first-user feedback: what felt trustworthy, what was confusing,
+              and what would make you comfortable installing it on your own homelab?
+            </p>
+          </div>
+          <a href="https://github.com/goldenproductions/insightd/discussions/286" target="_blank" rel="noopener noreferrer" class="inline-flex justify-center rounded-lg bg-accent px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-accent-dark">
+            Leave feedback
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</Base>
+
+<style>
+  .demo-tab {
+    border-radius: 0.75rem;
+    padding: 0.75rem 0.875rem;
+    text-align: left;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+  .demo-tab:hover,
+  .demo-tab.is-active {
+    background: var(--surface);
+    color: var(--text);
+  }
+  .metric-card,
+  .asset-card,
+  .evidence-card {
+    border: 1px solid var(--border);
+    border-radius: 0.875rem;
+    background: var(--bg);
+    padding: 1rem;
+  }
+  .metric-card strong {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 1.35rem;
+    color: var(--text);
+  }
+  .metric-label,
+  .metric-note,
+  .asset-subtitle,
+  .evidence-card span {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .metric-note { margin-top: 0.25rem; }
+  .feed-item,
+  .alert-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    padding: 0.875rem;
+  }
+  .feed-item { justify-content: flex-start; }
+  .status-dot {
+    margin-top: 0.35rem;
+    height: 0.55rem;
+    width: 0.55rem;
+    flex: none;
+    border-radius: 9999px;
+  }
+  .step-dot {
+    margin-right: 0.5rem;
+    display: inline-flex;
+    height: 1.35rem;
+    width: 1.35rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--color-accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .asset-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--text);
+  }
+  .bar-row {
+    margin-top: 0.8rem;
+    display: grid;
+    grid-template-columns: 2.5rem 1fr 2.5rem;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  .bar {
+    height: 0.45rem;
+    overflow: hidden;
+    border-radius: 9999px;
+    background: var(--border-light);
+  }
+  .bar i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-accent);
+  }
+  .bar i.warn { background: var(--color-warning); }
+  .badge-success,
+  .badge-warning,
+  .badge-danger {
+    white-space: nowrap;
+    border-radius: 9999px;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+  .badge-success { background: rgba(16, 185, 129, 0.12); color: var(--color-success); }
+  .badge-warning { background: rgba(245, 158, 11, 0.12); color: var(--color-warning); }
+  .badge-danger { background: rgba(239, 68, 68, 0.12); color: var(--color-danger); }
+  .evidence-card strong {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: var(--text);
+    font-size: 0.875rem;
+  }
+</style>
+
+<script is:inline>
+  (function() {
+    var titleByView = {
+      overview: 'Overview',
+      hosts: 'Hosts',
+      containers: 'Containers',
+      endpoints: 'Endpoints',
+      alerts: 'Alerts',
+      diagnosis: 'Diagnosis'
+    };
+
+    function showView(view) {
+      document.querySelectorAll('[data-demo-panel]').forEach(function(panel) {
+        panel.classList.toggle('hidden', panel.getAttribute('data-demo-panel') !== view);
+      });
+      document.querySelectorAll('[data-demo-view]').forEach(function(tab) {
+        var active = tab.getAttribute('data-demo-view') === view;
+        tab.classList.toggle('is-active', active);
+        tab.setAttribute('aria-current', active ? 'page' : 'false');
+      });
+      var title = document.querySelector('[data-demo-title]');
+      if (title) title.textContent = titleByView[view] || 'Overview';
+    }
+
+    document.querySelectorAll('[data-demo-view]').forEach(function(tab) {
+      tab.addEventListener('click', function() {
+        showView(tab.getAttribute('data-demo-view'));
+      });
+    });
+
+    document.querySelectorAll('[data-demo-jump]').forEach(function(link) {
+      link.addEventListener('click', function() {
+        showView(link.getAttribute('data-demo-jump'));
+      });
+    });
+  })();
+</script>
